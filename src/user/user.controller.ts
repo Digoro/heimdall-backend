@@ -1,16 +1,20 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Pagination } from 'nestjs-typeorm-paginate';
+import { UserSearchDto } from './user.dto';
+import { User } from './user.entity';
+import { UserService } from './user.service';
 
 @Controller('api/users')
 export class UserController {
 
+  constructor(
+    private userService: UserService,
+  ) { }
+
   @UseGuards(AuthGuard('jwt'))
-  @Get()
-  findAll() {
-    return [
-      { id: 1, name: 'Alice', role: 'admin' },
-      { id: 2, name: 'Bob', role: 'operator' },
-      { id: 3, name: 'Charlie', role: 'viewer' },
-    ];
+  @Post('search')
+  search(@Body() dto: UserSearchDto): Promise<Pagination<User>> {
+    return this.userService.search(dto);
   }
 }
