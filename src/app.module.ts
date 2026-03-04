@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AOIModule } from './aoi/aoi.module';
+import { APIModule } from './api/api.module';
 import { AuthModule } from './auth/auth.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { ImagingModule } from './imaging/imaging.module';
@@ -31,12 +31,12 @@ import { UserModule } from './user/user.module';
       })
     }),
     AuthModule,
+    APIModule,
     UserModule,
     OrderModule,
     ProductModule,
     CatalogModule,
-    AOIModule,
-    ImagingModule
+    ImagingModule,
   ],
   controllers: [],
   providers: [],

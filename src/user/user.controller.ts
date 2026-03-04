@@ -1,7 +1,8 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Pagination } from 'nestjs-typeorm-paginate';
-import { UserSearchDto } from './user.dto';
+import { AuthService } from 'src/auth/auth.service';
+import { UserCreateDto, UserSearchDto } from './user.dto';
 import { User } from './user.entity';
 import { UserService } from './user.service';
 
@@ -10,7 +11,13 @@ export class UserController {
 
   constructor(
     private userService: UserService,
+    private authService: AuthService
   ) { }
+
+  @Post('')
+  create(@Body() user: UserCreateDto): Promise<User> {
+    return this.authService.create(user);
+  }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('search')

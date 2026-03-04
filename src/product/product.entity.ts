@@ -3,7 +3,7 @@ import { BasicEntity } from "src/shared/model/basic.entity";
 import { Column, Entity, OneToOne } from "typeorm";
 import { ProductLevel } from "./product.dto";
 
-@Entity({ name: 'product' })
+@Entity({ name: 'TB_PRODUCT' })
 export class Product extends BasicEntity {
     @Column({ type: 'enum', enum: ProductLevel, default: ProductLevel.L1A })
     productLevel: ProductLevel;

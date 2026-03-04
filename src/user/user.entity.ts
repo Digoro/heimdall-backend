@@ -1,17 +1,18 @@
 import { Exclude } from "class-transformer";
-import { AOI } from "src/aoi/aoi.entity";
+import { APIFeatureUsage } from "src/api/api.entity";
 import { Order } from "src/order/order.entity";
 import { BasicEntity } from "src/shared/model/basic.entity";
-import { Column, Entity, OneToMany, OneToOne } from "typeorm";
+import { BeforeInsert, Column, Entity, OneToMany } from "typeorm";
 import { Role } from "./user.dto";
+const bcrypt = require('bcrypt');
 
-@Entity({ name: 'user' })
+@Entity({ name: 'TB_USER' })
 export class User extends BasicEntity {
     @Column({ unique: true, length: 255 })
     email: string;
 
     @Exclude()
-    @Column({ length: 255 })
+    @Column({ nullable: true, type: 'text' })
     password: string;
 
     @Column({ length: 50 })
@@ -23,9 +24,30 @@ export class User extends BasicEntity {
     @Column({ type: 'enum', enum: Role, default: Role.USER })
     role: Role;
 
-    @OneToOne(() => Order, order => order.user)
-    order: Order;
+    @Column({ default: 0 })
+    dailyLimit: number;
 
-    @OneToMany(() => AOI, aoi => aoi.user)
-    aois: AOI[];
+    @Column({ default: 0 })
+    dailyUsage: number;
+
+    @Column({ default: 0 })
+    monthlyLimit: number;
+
+    @Column({ default: 0 })
+    monthlyUsage: number;
+
+    @OneToMany(() => Order, entity => entity.user)
+    orders: Order[];
+
+    @OneToMany(() => APIFeatureUsage, entity => entity.user)
+    apiFeatureUsageList: APIFeatureUsage[];
+
+    @BeforeInsert()
+    async beforeInsert() {
+        if (this.password) this.password = await bcrypt.hash(this.password, 12);
+    }
+
+    comparePassword(attempPassword: string): boolean {
+        return bcrypt.compare(attempPassword, this.password);
+    }
 }

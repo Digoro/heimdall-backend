@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AOI } from './aoi.entity';
+import { APIFeatureUsage, APIKey } from './api.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      AOI
+      APIKey,
+      APIFeatureUsage
     ]),
   ],
   providers: [
@@ -13,4 +14,4 @@ import { AOI } from './aoi.entity';
   controllers: [
   ],
 })
-export class AOIModule { }
+export class APIModule { }
