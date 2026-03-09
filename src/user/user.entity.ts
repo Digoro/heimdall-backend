@@ -1,5 +1,5 @@
 import { Exclude } from "class-transformer";
-import { APIFeatureUsage } from "src/api/api.entity";
+import { APIKey } from "src/apiKey/api.entity";
 import { Order } from "src/order/order.entity";
 import { BasicEntity } from "src/shared/model/basic.entity";
 import { BeforeInsert, Column, Entity, OneToMany } from "typeorm";
@@ -39,8 +39,8 @@ export class User extends BasicEntity {
     @OneToMany(() => Order, entity => entity.user)
     orders: Order[];
 
-    @OneToMany(() => APIFeatureUsage, entity => entity.user)
-    apiFeatureUsageList: APIFeatureUsage[];
+    @OneToMany(() => APIKey, entity => entity.user)
+    apiKeys: APIKey[];
 
     @BeforeInsert()
     async beforeInsert() {

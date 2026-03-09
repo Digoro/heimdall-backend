@@ -12,19 +12,13 @@ export class AuthService {
     @InjectRepository(User) private userRepository: Repository<User>,
     private jwtService: JwtService) { }
 
-  login2(email: string, password: string) {
-    if (password != 'ap') {
-      throw new UnauthorizedException();
-    }
-    const accessToken = this.jwtService.sign({ email });
-    return accessToken;
-  }
-
   async login(email: string, password: string): Promise<string> {
     const user = await this.findByEmail(email);
-    if (!user) throw new UnauthorizedException('로그인에 실패하였습니다. 입력 정보를 다시 확인해주세요.');
+    if (!user) throw new UnauthorizedException();
+
     const match = await this.comparePassword(password, user.password);
-    if (!match) throw new UnauthorizedException('로그인에 실패하였습니다. 입력 정보를 다시 확인해주세요.');
+    if (!match) throw new UnauthorizedException();
+
     return await this.generateJWT(user);
   }
 
@@ -37,16 +31,17 @@ export class AuthService {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role
+      role: user.role,
     }
     return this.jwtService.sign(data);
   }
 
   async create(userDto: UserCreateDto): Promise<User> {
     const findEmail = await this.findByEmail(userDto.email);
-    if (findEmail) throw new BadRequestException('이미 해당 이메일이 존재합니다.');
+    if (findEmail) throw new BadRequestException('Already exist email.');
+
     const user = await this.userRepository.save(this.userRepository.create(userDto));
-    return user;
+    return (await this.findById(user.id))!
   }
 
   async findByEmail(email: string): Promise<User | null> {

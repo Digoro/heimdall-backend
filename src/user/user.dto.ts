@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsEmail, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsArray, IsEmail, IsEnum, IsOptional, IsString, Length, Matches } from 'class-validator';
 import { PaginationSearchDto } from 'src/shared/interface/pagination.dto';
 
 export enum Role {
@@ -17,20 +17,21 @@ export class UserSearchDto extends PaginationSearchDto {
 
 export class UserCreateDto {
     @IsEmail()
-    @MaxLength(255)
+    @Length(1, 255)
     email: string;
 
-    @IsOptional()
     @IsString()
-    @MinLength(10)
-    @MaxLength(20)
+    @Length(8, 100)
+    @Matches(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,100}$/, {
+        message: 'Password must contain a mix of english letters and special characters.'
+    })
     password: string;
 
     @IsString()
-    @MaxLength(20)
+    @Length(1, 50)
     name: string;
 
     @IsString()
-    @MaxLength(20)
+    @Length(1, 100)
     department: string;
 }

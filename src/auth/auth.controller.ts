@@ -1,4 +1,5 @@
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -13,7 +14,14 @@ export class AuthController {
       const jwt = await this.authService.login(body.email, body.password);
       return { accessToken: jwt }
     } catch {
-      throw new UnauthorizedException('로그인에 실패하였습니다. 입력 정보를 다시 확인해주세요.');
+      throw new UnauthorizedException('Incorrect email or password. Please try again.');
     }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('user')
+  async getUser(@Request() request) {
+    const userId = request.user.id;
+    return await this.authService.findById(userId);
   }
 }

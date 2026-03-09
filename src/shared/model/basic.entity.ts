@@ -15,3 +15,7 @@ export class BasicEntity extends BaseEntity {
         this.updatedAt = new Date;
     }
 }
+
+export interface Dto<T> {
+    toEntity(...args: any[]): T;
+}

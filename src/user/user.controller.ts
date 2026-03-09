@@ -15,8 +15,8 @@ export class UserController {
   ) { }
 
   @Post('')
-  create(@Body() user: UserCreateDto): Promise<User> {
-    return this.authService.create(user);
+  async create(@Body() user: UserCreateDto) {
+    return await this.authService.create(user);
   }
 
   @UseGuards(AuthGuard('jwt'))

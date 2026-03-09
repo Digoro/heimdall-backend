@@ -1,3 +1,4 @@
+import { Exclude } from "class-transformer";
 import { BasicEntity } from "src/shared/model/basic.entity";
 import { User } from "src/user/user.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
@@ -5,20 +6,25 @@ import { APIKeyStauts } from "./api.dto";
 
 @Entity({ name: 'TB_API_KEY' })
 export class APIKey extends BasicEntity {
+    @Exclude()
     @Column({ type: 'text' })
-    keyValue: string;
+    hashKey: string;
 
-    @Column({ length: 30 })
+    @Column({ type: 'text' })
+    maskKey: string;
+
+    @Column({ length: 30, nullable: true })
     label: string;
 
     @Column({ type: 'enum', enum: APIKeyStauts, default: APIKeyStauts.ACTIVE })
     status: APIKeyStauts;
 
-    @Column()
-    expiresAt: Date;
-
-    @Column()
+    @Column({ nullable: true })
     lastUsedAt: Date;
+
+    @ManyToOne(() => User, entity => entity.apiKeys)
+    @JoinColumn({ name: 'userId' })
+    user: User;
 
     @OneToMany(() => APIFeatureUsage, entity => entity.apiKey)
     apiFeatureUsageList: APIFeatureUsage[];
@@ -32,11 +38,7 @@ export class APIFeatureUsage extends BasicEntity {
     @Column()
     usagePoint: number;
 
-    @ManyToOne(() => User, entity => entity.apiFeatureUsageList)
-    @JoinColumn({ name: 'userId' })
-    user: User;
-
-    @ManyToOne(() => User, entity => entity.apiFeatureUsageList)
+    @ManyToOne(() => User, entity => entity.apiKeys)
     @JoinColumn({ name: 'apiKeyId' })
     apiKey: APIKey;
 } 
