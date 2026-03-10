@@ -8,7 +8,7 @@ import { OrderStatus, OrderType } from "./order.dto";
 
 @Entity({ name: 'TB_ORDER' })
 export class Order extends BasicEntity {
-    @Column({ type: 'enum', enum: OrderType, default: OrderType.ProductOrder })
+    @Column({ type: 'enum', enum: OrderType, default: OrderType.ARCHVING_ORDER })
     type: OrderType;
 
     @Column({ type: 'enum', enum: ProductLevel, default: ProductLevel.L1A })
