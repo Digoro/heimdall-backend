@@ -1,8 +1,10 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { AuthService } from 'src/auth/auth.service';
-import { UserCreateDto, UserSearchDto } from './user.dto';
+import { Roles } from 'src/shared/decorator/roles.decorator';
+import { RolesGuard } from 'src/shared/guard/roles-guard';
+import { Role, UserCreateDto, UserSearchDto, UserUpdateDto } from './user.dto';
 import { User } from './user.entity';
 import { UserService } from './user.service';
 
@@ -19,9 +21,24 @@ export class UserController {
     return await this.authService.create(user);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @Roles(Role.ADMIN)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Post('search')
   search(@Body() dto: UserSearchDto): Promise<Pagination<User>> {
     return this.userService.search(dto);
+  }
+
+  @Roles(Role.ADMIN)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Delete(':id')
+  async delete(@Param('id') id: number) {
+    return await this.userService.delete(id);
+  }
+
+  @Roles(Role.ADMIN)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Put(':id')
+  async update(@Param('id') id: number, @Body() dto: UserUpdateDto) {
+    return await this.userService.update(id, dto);
   }
 }
