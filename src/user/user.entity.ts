@@ -36,6 +36,9 @@ export class User extends BasicEntity {
     @Column({ default: 0 })
     monthlyUsage: number;
 
+    @Column({ default: false })
+    isApproved: boolean;
+
     @OneToMany(() => Order, entity => entity.user)
     orders: Order[];
 

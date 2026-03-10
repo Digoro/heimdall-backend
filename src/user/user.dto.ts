@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsEmail, IsEnum, IsNumber, IsOptional, IsString, Length, Matches } from 'class-validator';
+import { IsArray, IsBoolean, IsEmail, IsEnum, IsNumber, IsOptional, IsString, Length, Matches } from 'class-validator';
 import { PaginationSearchDto } from 'src/shared/interface/pagination.dto';
 
 export enum Role {
@@ -53,4 +53,8 @@ export class UserUpdateDto extends PartialType(UserCreateDto) {
     @IsOptional()
     @IsNumber()
     monthlyLimit: number;
+
+    @IsOptional()
+    @IsBoolean()
+    isApproved: boolean;
 }
