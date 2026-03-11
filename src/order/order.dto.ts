@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsArray, IsEmail, IsEnum, IsOptional } from "class-validator";
+import { IsArray, IsEnum, IsOptional, IsString } from "class-validator";
 import { PaginationSearchDto } from "src/shared/interface/pagination.dto";
 
 export enum OrderType {
@@ -18,7 +18,7 @@ export enum OrderStatus {
 
 export class OrderSearchDto extends PaginationSearchDto {
     @IsOptional()
-    @IsEmail()
+    @IsString()
     email: string;
 
     @IsOptional()
@@ -32,4 +32,10 @@ export class OrderSearchDto extends PaginationSearchDto {
     @IsEnum(OrderType, { each: true })
     @Type(() => Array)
     typeList: OrderType[];
+}
+
+export class OrderUpdateDto {
+    @IsOptional()
+    @IsEnum(OrderStatus)
+    status: OrderStatus;
 }
