@@ -31,9 +31,15 @@ async function bootstrap() {
     .addSecurityRequirements('ApiKeyAuth')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/api-docs', app, document);
+  SwaggerModule.setup('/api-docs-light', app, document, {
+    customCss: '.topbar { display:none }'
+  });
+  SwaggerModule.setup('/api-docs-dark', app, document, {
+    customJs: '/static/swagger-dark.js',
+    customCss: '.topbar { display:none }'
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }
 
-bootstrap();
+bootstrap(); 
