@@ -38,7 +38,7 @@ export class APIFeatureUsage extends BasicEntity {
     @Column()
     usagePoint: number;
 
-    @ManyToOne(() => User, entity => entity.apiKeys)
+    @ManyToOne(() => APIKey, entity => entity.apiFeatureUsageList)
     @JoinColumn({ name: 'apiKeyId' })
     apiKey: APIKey;
 } 

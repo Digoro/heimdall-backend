@@ -24,13 +24,13 @@ export class User extends BasicEntity {
     @Column({ type: 'enum', enum: Role, default: Role.USER })
     role: Role;
 
-    @Column({ default: 0 })
+    @Column({ default: 100 })
     dailyLimit: number;
 
     @Column({ default: 0 })
     dailyUsage: number;
 
-    @Column({ default: 0 })
+    @Column({ default: 500 })
     monthlyLimit: number;
 
     @Column({ default: 0 })
@@ -39,9 +39,11 @@ export class User extends BasicEntity {
     @Column({ default: false })
     isApproved: boolean;
 
+    @Exclude()
     @OneToMany(() => Order, entity => entity.user)
     orders: Order[];
 
+    @Exclude()
     @OneToMany(() => APIKey, entity => entity.user)
     apiKeys: APIKey[];
 

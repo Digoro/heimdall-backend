@@ -16,28 +16,28 @@ export class UserController {
     private authService: AuthService
   ) { }
 
-  @Post('')
+  @Post('admin')
   async create(@Body() user: UserCreateDto) {
     return await this.authService.create(user);
   }
 
   @Roles(Role.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Post('search')
+  @Post('admin/search')
   search(@Body() dto: UserSearchDto): Promise<Pagination<User>> {
     return this.userService.search(dto);
   }
 
   @Roles(Role.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Delete(':id')
+  @Delete('admin/:id')
   async delete(@Param('id') id: number) {
     return await this.userService.delete(id);
   }
 
   @Roles(Role.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Put(':id')
+  @Put('admin/:id')
   async update(@Param('id') id: number, @Body() dto: UserUpdateDto) {
     return await this.userService.update(id, dto);
   }

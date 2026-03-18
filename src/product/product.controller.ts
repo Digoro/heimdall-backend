@@ -24,7 +24,7 @@ export class ProductController {
       }
     })
   }))
-  @Post('upload')
+  @Post('admin/upload')
   upload(@UploadedFile() file: any) {
     return { url: `http://localhost:3000/uploads/${file.filename}` };
   }

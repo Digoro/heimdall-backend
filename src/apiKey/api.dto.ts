@@ -1,4 +1,4 @@
-import { IsEnum, IsString } from "class-validator";
+import { IsDate, IsEnum, IsOptional, IsString } from "class-validator";
 import { Dto } from "src/shared/model/basic.entity";
 import { User } from "src/user/user.entity";
 import { APIKey } from "./api.entity";
@@ -6,9 +6,7 @@ import { APIKey } from "./api.entity";
 export enum APIKeyStauts {
     ACTIVE = "Active",
     INACTIVE = "Inactive",
-    EXPIRED = "Expired"
 }
-
 
 export class CreateAPIKeyDto implements Dto<APIKey> {
     @IsString()
@@ -29,7 +27,18 @@ export interface ResponseCreateAPIKey {
     maskKey: string;
 }
 
-export class UpdateAPIKeyDto {
+export class UpdateApiKeyStatusDto {
     @IsEnum(APIKeyStauts)
-    status: APIKeyStauts;
+    status?: APIKeyStauts;
+
+    @IsOptional()
+    @IsDate()
+    lastUsedAt?: Date;
+}
+
+export interface RequestAPI {
+    feature: any;
+    url: string;
+    method: string;
+    point: number;
 }

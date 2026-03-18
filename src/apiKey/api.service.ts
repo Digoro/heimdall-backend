@@ -1,23 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash, randomBytes } from 'crypto';
+import { IncomingMessage } from 'http';
 import { Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { AuthService } from 'src/auth/auth.service';
+import { OrderType } from 'src/order/order.dto';
 import { PaginationSearchDto } from 'src/shared/interface/pagination.dto';
+import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
-import { CreateAPIKeyDto, ResponseCreateAPIKey, UpdateAPIKeyDto } from './api.dto';
-import { APIKey } from './api.entity';
+import { APIKeyStauts, CreateAPIKeyDto, RequestAPI as PaidFeature, ResponseCreateAPIKey, UpdateApiKeyStatusDto } from './api.dto';
+import { APIFeatureUsage, APIKey } from './api.entity';
 
 @Injectable()
 export class APIService {
     constructor(
         @InjectRepository(APIKey) private apiKeyRepository: Repository<APIKey>,
-        public authService: AuthService
+        @InjectRepository(APIFeatureUsage) private usageRepository: Repository<APIFeatureUsage>,
+        private authService: AuthService,
+        private userService: UserService
     ) { }
 
-    async search(dto: PaginationSearchDto): Promise<Pagination<APIKey>> {
+    async searchByUser(userId: number, dto: PaginationSearchDto): Promise<Pagination<APIKey>> {
         const options = { page: dto.page, limit: dto.limit };
         const query = this.apiKeyRepository.createQueryBuilder('apiKey')
+            .leftJoin('apiKey.user', 'user')
+            .where('user.id = :userId', { userId })
             .orderBy('apiKey.createdAt', 'DESC')
 
         const results = await paginate<APIKey>(query, options);
@@ -50,7 +57,7 @@ export class APIService {
         return { key, maskKey };
     }
 
-    async update(id: number, dto: UpdateAPIKeyDto): Promise<{ status: string }> {
+    async update(id: number, dto: UpdateApiKeyStatusDto): Promise<{ status: string }> {
         const apiKey = await this.findById(id);
         const newApiKey = await this.apiKeyRepository.save(Object.assign(apiKey, dto));
         return { status: newApiKey.status };
@@ -59,6 +66,55 @@ export class APIService {
     async findById(id: number): Promise<APIKey> {
         const apiKey = (await this.apiKeyRepository.findOneBy({ id }))!;
         return apiKey;
+    }
+
+    async findByKey(key: string): Promise<APIKey | null> {
+        const hashKey = this.hashAPIKey(key);
+        const query = this.apiKeyRepository.createQueryBuilder('apiKey')
+            .leftJoinAndSelect('apiKey.user', 'user')
+            .where('apiKey.hashKey = :hashKey', { hashKey });
+        return await query.getOne();
+    }
+
+    async useKey(request: IncomingMessage, apiKey: APIKey) {
+        if (apiKey.status == APIKeyStauts.INACTIVE) {
+            throw new ForbiddenException('Invalid API key');
+        }
+
+        await this.update(apiKey.id, { lastUsedAt: new Date() });
+
+        const paidFeatures: PaidFeature[] = [
+            { feature: OrderType.ARCHVING_ORDER, url: '/api/orders/archive', method: 'POST', point: 1 },
+            { feature: OrderType.TASKING_ORDER, url: '/api/orders/task', method: 'POST', point: 1 },
+        ];
+
+        const paidFeature = paidFeatures.find(f => f.url == request.url && f.method == request.method);
+        if (paidFeature) {
+            const user = (await this.authService.findById(apiKey.user.id))!;
+            user.dailyUsage += paidFeature.point;
+            user.monthlyUsage += paidFeature.point;
+
+            if (user.dailyUsage > user.dailyLimit) {
+                throw new ForbiddenException('Daily limit exceeded');
+            }
+            if (user.monthlyUsage > user.monthlyLimit) {
+                throw new ForbiddenException('Monthly limit exceeded');
+            }
+
+            await this.addUsage(apiKey, paidFeature.feature, paidFeature.point);
+
+            await this.userService.update(user.id, user);
+        } else {
+            await this.addUsage(apiKey, 'NOT_PAID_FEATURE', 0);
+        }
+    }
+
+    async addUsage(apiKey: APIKey, feature: string, point: number): Promise<APIFeatureUsage> {
+        const newUsage = new APIFeatureUsage();
+        newUsage.feature = feature;
+        newUsage.usagePoint = point;
+        newUsage.apiKey = apiKey;
+        return await this.usageRepository.save(this.usageRepository.create(newUsage));
     }
 
     async delete(id: number) {

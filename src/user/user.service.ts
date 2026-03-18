@@ -42,4 +42,18 @@ export class UserService {
         const user = await this.findById(id);
         return await this.userRepository.save(Object.assign(user!, dto))
     }
+
+    async allResetDailyUsage() {
+        await this.userRepository.createQueryBuilder()
+            .update()
+            .set({ dailyUsage: 0 })
+            .execute();
+    }
+
+    async allResetMonthlyUsage() {
+        await this.userRepository.createQueryBuilder()
+            .update()
+            .set({ monthlyUsage: 0 })
+            .execute();
+    }
 }
