@@ -9,7 +9,7 @@ export class CatalogService {
         @InjectRepository(Catalog) private catalogRepository: Repository<Catalog>,
     ) { }
 
-    async get(id: number): Promise<Catalog> {
-        return (await this.catalogRepository.findOneBy({ id }))!;
+    async get(id: number): Promise<Catalog | null> {
+        return await this.catalogRepository.findOneBy({ id });
     }
 }

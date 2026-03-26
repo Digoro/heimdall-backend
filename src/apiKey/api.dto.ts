@@ -2,6 +2,7 @@ import { IsDate, IsEnum, IsOptional, IsString } from "class-validator";
 import { Dto } from "src/shared/model/basic.entity";
 import { User } from "src/user/user.entity";
 import { APIKey } from "./api.entity";
+import { Type } from "class-transformer";
 
 export enum APIKeyStauts {
     ACTIVE = "Active",
@@ -33,6 +34,7 @@ export class UpdateApiKeyStatusDto {
 
     @IsOptional()
     @IsDate()
+    @Type(() => Date)
     lastUsedAt?: Date;
 }
 

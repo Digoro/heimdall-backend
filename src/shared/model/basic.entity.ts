@@ -1,11 +1,11 @@
-import { Exclude } from "class-transformer";
+import { Expose } from "class-transformer";
 import { BaseEntity, BeforeUpdate, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export class BasicEntity extends BaseEntity {
-    @Exclude()
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Expose()
     @CreateDateColumn()
     createdAt: Date;
 

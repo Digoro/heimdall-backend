@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Imaging } from './imaging.entity';
+import { ImagingService } from './imaging.service';
 
 @Module({
   imports: [
@@ -9,8 +10,12 @@ import { Imaging } from './imaging.entity';
     ]),
   ],
   providers: [
+    ImagingService
   ],
   controllers: [
   ],
+  exports: [
+    ImagingService
+  ]
 })
 export class ImagingModule { }

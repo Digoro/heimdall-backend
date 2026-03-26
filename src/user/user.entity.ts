@@ -39,11 +39,9 @@ export class User extends BasicEntity {
     @Column({ default: false })
     isApproved: boolean;
 
-    @Exclude()
     @OneToMany(() => Order, entity => entity.user)
     orders: Order[];
 
-    @Exclude()
     @OneToMany(() => APIKey, entity => entity.user)
     apiKeys: APIKey[];
 

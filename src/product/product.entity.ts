@@ -1,4 +1,3 @@
-import { Exclude } from "class-transformer";
 import { Catalog } from "src/catalog/catalog.entity";
 import { BasicEntity } from "src/shared/model/basic.entity";
 import { Column, Entity, OneToOne } from "typeorm";
@@ -18,7 +17,6 @@ export class Product extends BasicEntity {
     @Column({ length: 50 })
     fileFormat: string;
 
-    @Exclude()
     @OneToOne(() => Catalog, catalog => catalog.product)
     catalog: Catalog;
 }

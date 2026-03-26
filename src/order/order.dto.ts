@@ -1,6 +1,7 @@
 import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsEnum, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsArray, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { Geometry, TaskProperty } from "src/imaging/imaging.dto";
 import { ProductLevel } from "src/product/product.dto";
 import { PaginationSearchDto } from "src/shared/interface/pagination.dto";
 
@@ -52,17 +53,27 @@ export class OrderUpdateDto {
 }
 
 export class ArchvingOrderRequestDto {
+    @ApiProperty({ example: 1, description: 'catalog id' })
     @IsNumber()
     catalogId: number;
 
+    @ApiProperty({ example: ProductLevel.L1A, description: 'product level' })
     @IsEnum(ProductLevel)
     productLevel: ProductLevel;
 }
 
 export class TaskingOrderRequestDto {
-    @IsNumber()
-    catalogId: number;
+    @ApiProperty({ example: 'Feature' })
+    @IsString()
+    type: string;
 
-    @IsEnum(ProductLevel)
-    productLevel: ProductLevel;
+    @ApiProperty()
+    @ValidateNested()
+    @Type(() => Geometry)
+    geometry: Geometry;
+
+    @ApiProperty()
+    @ValidateNested()
+    @Type(() => TaskProperty)
+    properties: TaskProperty;
 }

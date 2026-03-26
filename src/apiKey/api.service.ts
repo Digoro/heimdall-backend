@@ -117,6 +117,7 @@ export class APIService {
         return await this.usageRepository.save(this.usageRepository.create(newUsage));
     }
 
+    //TODO: API_FEATURE_USAGE 참조되서 삭제 안됨
     async delete(id: number) {
         this.apiKeyRepository.delete(id);
     }
