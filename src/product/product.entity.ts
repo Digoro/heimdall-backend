@@ -1,12 +1,12 @@
 import { Catalog } from "src/catalog/catalog.entity";
 import { BasicEntity } from "src/shared/model/basic.entity";
 import { Column, Entity, OneToOne } from "typeorm";
-import { ProductLevel } from "./product.dto";
+import { ProductType } from "./product.dto";
 
 @Entity({ name: 'TB_PRODUCT' })
 export class Product extends BasicEntity {
-    @Column({ type: 'enum', enum: ProductLevel, default: ProductLevel.L1A })
-    productLevel: ProductLevel;
+    @Column({ type: 'enum', enum: ProductType, default: ProductType.SLC })
+    productType: ProductType;
 
     @Column({ type: 'text' })
     thumbnail: string;

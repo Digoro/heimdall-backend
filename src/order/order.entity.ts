@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Catalog } from "src/catalog/catalog.entity";
 import { Imaging } from "src/imaging/imaging.entity";
-import { ProductLevel } from "src/product/product.dto";
+import { ProductType } from "src/product/product.dto";
 import { BasicEntity } from "src/shared/model/basic.entity";
 import { User } from "src/user/user.entity";
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
@@ -16,24 +16,19 @@ export class Order extends BasicEntity {
     type: OrderType;
 
     @Expose()
-    @ApiProperty({ example: ProductLevel.L1A })
-    @Column({ type: 'enum', enum: ProductLevel, default: ProductLevel.L1A })
-    productLevel: ProductLevel;
+    @ApiProperty({ example: ProductType.SLC })
+    @Column({ type: 'enum', enum: ProductType, default: ProductType.SLC })
+    productType: ProductType;
 
     @Expose()
-    @ApiProperty({ example: OrderStatus.Pending })
-    @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.Pending })
+    @ApiProperty({ example: OrderStatus.PENDING })
+    @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
     status: OrderStatus;
 
     @Expose()
     @ApiProperty({ example: 'http://downloads.oms.com/q=fq8934fQ2NIO3F' })
     @Column({ type: 'text', nullable: true })
     downloadUrl: string;
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    exportedAt: Date;
 
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })

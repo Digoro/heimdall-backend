@@ -6,7 +6,7 @@ import { User } from "src/user/user.entity";
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm";
 import { ImagingMode } from "./catalog.dto";
 import { Expose } from "class-transformer";
-import { CornerCoordinates } from "src/imaging/imaging.dto";
+import { Geometry } from "src/imaging/imaging.dto";
 
 @Entity({ name: 'TB_CATALOG' })
 export class Catalog extends BasicEntity {
@@ -26,16 +26,9 @@ export class Catalog extends BasicEntity {
     imagingEndAt: Date;
 
     @Expose()
-    @ApiProperty({
-        example: {
-            topLeft: { x: 50, y: 100 },
-            topRight: { x: 50, y: 100 },
-            bottomLeft: { x: 50, y: 100 },
-            bottomRight: { x: 50, y: 100 },
-        }
-    })
-    @Column({ type: 'jsonb' })
-    cornerCoordinates: CornerCoordinates;
+    @ApiProperty()
+    @Column({ type: 'geometry', spatialFeatureType: 'Polygon', srid: 4326, nullable: true })
+    geometry: Geometry;
 
     @Expose()
     @ApiProperty({ example: "Seoul" })
@@ -64,18 +57,8 @@ export class Catalog extends BasicEntity {
 
     @Expose()
     @ApiProperty({ example: "5.2" })
-    @Column()
-    nadirAngle: number;
-
-    @Expose()
-    @ApiProperty({ example: "5.2" })
-    @Column()
+    @Column({ comment: 'lookAngle과 비슷한 개념' })
     offNadirAngle: number;
-
-    @Expose()
-    @ApiProperty({ example: "Band 1: Red, Band 2: Green" })
-    @Column({ length: 150 })
-    bandColorInterp: string;
 
     @OneToOne(() => User, user => user.orders)
     @JoinColumn()

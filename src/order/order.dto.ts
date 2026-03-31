@@ -2,7 +2,7 @@ import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
 import { Geometry, TaskProperty } from "src/imaging/imaging.dto";
-import { ProductLevel } from "src/product/product.dto";
+import { ProductType } from "src/product/product.dto";
 import { PaginationSearchDto } from "src/shared/interface/pagination.dto";
 
 export enum OrderType {
@@ -11,12 +11,12 @@ export enum OrderType {
 }
 
 export enum OrderStatus {
-    Pending = "Pending",
-    Approved = "Approved",
-    Rejected = "Rejected",
-    Completed = "Completed",
-    Failed = "Failed",
-    Canceled = "Canceled"
+    PENDING = "Pending",
+    APPROVED = "Approved",
+    REJECTED = "Rejected",
+    COMPLETED = "Completed",
+    FAILED = "Failed",
+    CANCELED = "Canceled"
 }
 
 export class OrderSearchDto extends PaginationSearchDto {
@@ -25,20 +25,14 @@ export class OrderSearchDto extends PaginationSearchDto {
     @IsString()
     email: string;
 
-    @ApiProperty({
-        example: Object.values(OrderStatus),
-        description: 'order status list'
-    })
+    @ApiProperty({ example: Object.values(OrderStatus), description: 'order status list' })
     @IsOptional()
     @IsArray()
     @IsEnum(OrderStatus, { each: true })
     @Type(() => Array)
     statusList: OrderStatus[];
 
-    @ApiProperty({
-        example: Object.values(OrderType),
-        description: 'order type list'
-    })
+    @ApiProperty({ example: Object.values(OrderType), description: 'order type list' })
     @IsOptional()
     @IsArray()
     @IsEnum(OrderType, { each: true })
@@ -57,9 +51,9 @@ export class ArchvingOrderRequestDto {
     @IsNumber()
     catalogId: number;
 
-    @ApiProperty({ example: ProductLevel.L1A, description: 'product level' })
-    @IsEnum(ProductLevel)
-    productLevel: ProductLevel;
+    @ApiProperty({ example: ProductType.SLC, description: 'product type' })
+    @IsEnum(ProductType)
+    productType: ProductType;
 }
 
 export class TaskingOrderRequestDto {

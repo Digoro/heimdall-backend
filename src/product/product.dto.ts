@@ -1,5 +1,5 @@
-export enum ProductLevel {
-    L1A = "L1A",
-    L1C = "L1C",
-    L1D = "L1D"
+export enum ProductType {
+    SLC = "SLC",
+    GEC = "GEC",
+    GEO = "GEO"
 }

@@ -8,6 +8,9 @@ const bcrypt = require('bcrypt');
 
 @Entity({ name: 'TB_USER' })
 export class User extends BasicEntity {
+    @Column({ unique: true, nullable: true })
+    refreshToken: string;
+
     @Column({ unique: true, length: 255 })
     email: string;
 

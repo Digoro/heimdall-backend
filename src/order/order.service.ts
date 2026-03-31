@@ -3,11 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { APIService } from 'src/apiKey/api.service';
 import { Repository } from 'typeorm';
-import { ArchvingOrderRequestDto, OrderSearchDto, OrderType, OrderUpdateDto, TaskingOrderRequestDto } from './order.dto';
+import { ArchvingOrderRequestDto, OrderSearchDto, OrderStatus, OrderType, OrderUpdateDto, TaskingOrderRequestDto } from './order.dto';
 import { Order } from './order.entity';
 import { CatalogService } from 'src/catalog/catalog.service';
 import { ImagingService } from 'src/imaging/imaging.service';
 import { Imaging } from 'src/imaging/imaging.entity';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class OrderService {
@@ -15,7 +16,8 @@ export class OrderService {
         @InjectRepository(Order) private orderRepository: Repository<Order>,
         private apiService: APIService,
         private catalogService: CatalogService,
-        private imagingService: ImagingService
+        private imagingService: ImagingService,
+        private userService: UserService
     ) { }
 
     async get(id: number): Promise<Order> {
@@ -71,9 +73,36 @@ export class OrderService {
         return results;
     }
 
-    async update(id: number, dto: OrderUpdateDto): Promise<any> {
+    async updateStatus(id: number, dto: OrderUpdateDto): Promise<any> {
         const order = await this.findById(id);
-        await this.orderRepository.save(Object.assign(order!, dto))
+
+        switch (dto.status) {
+            case OrderStatus.PENDING: {
+                await this.orderRepository.update(id, { status: dto.status, pendingAt: new Date() });
+                break;
+            }
+            case OrderStatus.APPROVED: {
+                await this.orderRepository.update(id, { status: dto.status, approvedAt: new Date() });
+                break;
+            }
+            case OrderStatus.REJECTED: {
+                await this.orderRepository.update(id, { status: dto.status, rejectedAt: new Date() });
+                break;
+            }
+            case OrderStatus.COMPLETED: {
+                await this.orderRepository.update(id, { status: dto.status, completedAt: new Date() });
+                break;
+            }
+            case OrderStatus.FAILED: {
+                await this.orderRepository.update(id, { status: dto.status, failedAt: new Date() });
+                break;
+            }
+            case OrderStatus.CANCELED: {
+                await this.orderRepository.update(id, { status: dto.status, canceledAt: new Date() });
+                break;
+            }
+        }
+
         return await this.get(order!.id);
     }
 
@@ -90,8 +119,8 @@ export class OrderService {
             type: OrderType.ARCHVING_ORDER,
             user: { id: apiKey.user.id },
             catalog: { id: dto.catalogId },
-            productLevel: dto.productLevel
-        }));
+            productType: dto.productType
+        } as Order));
 
         return await this.get(order.id);
     }
@@ -100,17 +129,45 @@ export class OrderService {
         const apiKey = (await this.apiService.findByKey(key))!;
 
         const newImaging = new Imaging();
+        newImaging.geometry = dto.geometry;
+        newImaging.name = dto.properties.name;
+        newImaging.description = dto.properties.description;
+        newImaging.priority = dto.properties.priority;
+        newImaging.windowOpen = dto.properties.windowOpen;
+        newImaging.windowClose = dto.properties.windowClose;
         newImaging.imagingMode = dto.properties.collectConstraint.imagingMode;
-        newImaging.imagingStartAt = dto.properties.windowOpen;
-        newImaging.imagingEndAt = dto.properties.windowClose;
-        newImaging.cornerCoordinates = dto.geometry.cornerCoordinates;
+        newImaging.polarization = dto.properties.collectConstraint.polarization;
+        newImaging.resolution = dto.properties.collectConstraint.resolution;
+        newImaging.minIncidenceAngle = dto.properties.collectConstraint.minIncidenceAngle;
+        newImaging.maxIncidenceAngle = dto.properties.collectConstraint.maxIncidenceAngle;
+        newImaging.lookSide = dto.properties.collectConstraint.lookSide;
+        newImaging.orbitDirection = dto.properties.collectConstraint.orbitDirection;
         const imaging = await this.imagingService.add(newImaging);
 
-        return await this.orderRepository.save(this.orderRepository.create({
+        const newOrder = await this.orderRepository.save(this.orderRepository.create({
             type: OrderType.TASKING_ORDER,
             user: { id: apiKey.user.id },
             imaging: { id: imaging.id },
-            productLevel: dto.properties.collectConstraint.productLevel
-        }));
+            productType: dto.properties.productType
+        } as Order));
+
+        return await this.get(newOrder.id);
+    }
+
+    async cancel(key: string, id: number) {
+        const apiKey = (await this.apiService.findByKey(key))!;
+        const user = (await this.userService.findById(apiKey.user.id))!;
+        const order = await this.orderRepository.createQueryBuilder('order')
+            .leftJoin('order.user', 'user')
+            .where('order.id = :orderId', { orderId: id })
+            .andWhere('user.id = :userId', { userId: user.id })
+            .getExists();
+
+        if (order) {
+            await this.orderRepository.update(id, { status: OrderStatus.CANCELED, canceledAt: new Date() });
+            return { message: 'Order canceled successful.' }
+        } else {
+            throw new NotFoundException();
+        }
     }
 }

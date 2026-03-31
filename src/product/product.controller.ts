@@ -1,11 +1,11 @@
 import { Controller, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { Roles } from 'src/shared/decorator/roles.decorator';
 import { RolesGuard } from 'src/shared/guard/roles-guard';
 import { Role } from 'src/user/user.dto';
 import { ProductService } from './product.service';
+import { JwtGuard } from 'src/auth/jwt.guard';
 
 @Controller('api/products')
 export class ProductController {
@@ -15,7 +15,7 @@ export class ProductController {
   ) { }
 
   @Roles(Role.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(JwtGuard, RolesGuard)
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
       destination: './uploads',

@@ -7,6 +7,7 @@ import { Order } from './order.entity';
 import { OrderService } from './order.service';
 import { CatalogModule } from 'src/catalog/catalog.module';
 import { ImagingModule } from 'src/imaging/imaging.module';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { ImagingModule } from 'src/imaging/imaging.module';
     AuthModule,
     APIModule,
     CatalogModule,
-    ImagingModule
+    ImagingModule,
+    UserModule
   ],
   providers: [
     OrderService

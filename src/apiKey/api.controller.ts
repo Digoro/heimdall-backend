@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { PaginationSearchDto } from 'src/shared/interface/pagination.dto';
 import { CreateAPIKeyDto, ResponseCreateAPIKey, UpdateApiKeyStatusDto } from './api.dto';
 import { APIService } from './api.service';
+import { JwtGuard } from 'src/auth/jwt.guard';
 
 @Controller('api/apiKeys')
 export class APIKeyController {
@@ -10,27 +10,27 @@ export class APIKeyController {
     private apiService: APIService
   ) { }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtGuard)
   @Post()
   create(@Body() dto: CreateAPIKeyDto, @Request() request): Promise<ResponseCreateAPIKey> {
     const userId = request.user.id;
     return this.apiService.create(userId, dto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtGuard)
   @Post('/search')
   async search(@Body() body: PaginationSearchDto, @Request() request) {
     const userId = request.user.id;
     return await this.apiService.searchByUser(userId, body);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtGuard)
   @Put('/status/:id')
   async update(@Param('id') id: number, @Body() dto: UpdateApiKeyStatusDto) {
     return await this.apiService.update(id, dto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtGuard)
   @Delete('/:id')
   async delete(@Param('id') id: number) {
     return await this.apiService.delete(id);
