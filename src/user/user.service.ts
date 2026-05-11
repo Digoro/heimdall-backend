@@ -30,15 +30,15 @@ export class UserService {
         return results;
     }
 
-    async delete(id: number) {
+    async delete(id: string) {
         return this.userRepository.delete(id);
     }
 
-    async findById(id: number): Promise<User | null> {
+    async findById(id: string): Promise<User | null> {
         return await this.userRepository.findOneBy({ id })
     }
 
-    async update(id: number, dto: UserUpdateDto): Promise<any> {
+    async update(id: string, dto: UserUpdateDto): Promise<any> {
         const user = await this.findById(id);
         return await this.userRepository.save(Object.assign(user!, dto))
     }

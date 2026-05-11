@@ -3,11 +3,14 @@ import { Expose } from "class-transformer";
 import { ImagingMode } from "src/catalog/catalog.dto";
 import { Order } from "src/order/order.entity";
 import { BasicEntity } from "src/shared/model/basic.entity";
-import { Column, Entity, OneToMany } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Geometry, LookSide, OrbitDirection as OrbitDirection, Polarization, Priority } from "./imaging.dto";
 
 @Entity({ name: 'TB_IMAGING' })
 export class Imaging extends BasicEntity {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
     // geometry
     @Expose()
     @ApiProperty()
@@ -42,8 +45,8 @@ export class Imaging extends BasicEntity {
 
     // property.constraint
     @Expose()
-    @ApiProperty({ example: ImagingMode.Stripmap })
-    @Column({ type: 'enum', enum: ImagingMode, default: ImagingMode.Stripmap, comment: '촬영 모드' })
+    @ApiProperty({ example: ImagingMode.STRIPMAP })
+    @Column({ type: 'enum', enum: ImagingMode, default: ImagingMode.STRIPMAP, comment: '촬영 모드' })
     imagingMode: ImagingMode;
 
     @Expose()
@@ -57,12 +60,12 @@ export class Imaging extends BasicEntity {
     resolution: number;
 
     @Expose()
-    @ApiProperty({ example: 20 })
+    @ApiProperty({ example: 15 })
     @Column({ type: 'float', comment: '최소 촬영 입사각' })
     minIncidenceAngle: number;
 
     @Expose()
-    @ApiProperty({ example: 50 })
+    @ApiProperty({ example: 35 })
     @Column({ type: 'float', comment: '최대 촬영 입사각' })
     maxIncidenceAngle: number;
 

@@ -2,12 +2,15 @@ import { Exclude } from "class-transformer";
 import { APIKey } from "src/apiKey/api.entity";
 import { Order } from "src/order/order.entity";
 import { BasicEntity } from "src/shared/model/basic.entity";
-import { BeforeInsert, Column, Entity, OneToMany } from "typeorm";
+import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Role } from "./user.dto";
 const bcrypt = require('bcrypt');
 
 @Entity({ name: 'TB_USER' })
 export class User extends BasicEntity {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
     @Column({ unique: true, nullable: true })
     refreshToken: string;
 

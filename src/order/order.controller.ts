@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Headers, Param, Patch, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiExcludeEndpoint, ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiExcludeEndpoint, ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { Roles } from 'src/shared/decorator/roles.decorator';
 import { APIKeyGuard } from 'src/shared/guard/api-key-guard';
@@ -8,7 +8,7 @@ import { APIUsageInterceptor } from 'src/shared/interceptor/api-usage.intercepto
 import { APIPaginationResponse as ApiPaginationResponse } from 'src/shared/interface/api-pagination-response';
 import { NotFoundErrorResponseDto, UnauthorizedErrorResponseDto } from 'src/shared/interface/error-response.dto';
 import { Role } from 'src/user/user.dto';
-import { ArchvingOrderRequestDto, OrderSearchDto, OrderUpdateDto, TaskingOrderRequestDto } from './order.dto';
+import { ArchiveOrderRequestDto, OrderSearchDto, OrderUpdateDto, TaskOrderRequestDto } from './order.dto';
 import { Order } from './order.entity';
 import { OrderService } from './order.service';
 import { Serialize, SerializeList } from 'src/shared/decorator/serialize.decorator';
@@ -26,7 +26,7 @@ export class OrderController {
   @Roles(Role.ADMIN)
   @UseGuards(JwtGuard, RolesGuard)
   @Get('admin/:id')
-  get(@Param('id') id: number): Promise<Order> {
+  get(@Param('id') id: string): Promise<Order> {
     return this.orderService.get(id);
   }
 
@@ -42,7 +42,7 @@ export class OrderController {
   @Roles(Role.ADMIN)
   @UseGuards(JwtGuard, RolesGuard)
   @Put('admin/:id/status')
-  async updateStatus(@Param('id') id: number, @Body() dto: OrderUpdateDto) {
+  async updateStatus(@Param('id') id: string, @Body() dto: OrderUpdateDto) {
     return await this.orderService.updateStatus(id, dto);
   }
 
@@ -52,6 +52,7 @@ export class OrderController {
   @ApiPaginationResponse(Order)
   @ApiResponse({ status: 401, description: 'Invalid API key', type: UnauthorizedErrorResponseDto })
   @UseGuards(APIKeyGuard)
+  @UseInterceptors(APIUsageInterceptor)
   @Post('search')
   @SerializeList(Order)
   async search(@Headers('api-key') apiKey: string, @Body() dto: OrderSearchDto): Promise<Pagination<Order>> {
@@ -59,29 +60,42 @@ export class OrderController {
   }
 
   @ApiSecurity('api-key')
+  @ApiOperation({ summary: 'Get a order by ID', description: 'Returns a single order by its ID' })
+  @ApiParam({ name: 'id', description: 'Order identifier' })
+  @ApiResponse({ status: 200, type: Order })
+  @ApiResponse({ status: 401, description: 'Invalid API key', type: UnauthorizedErrorResponseDto })
+  @ApiResponse({ status: 404, description: 'Not found', type: NotFoundErrorResponseDto })
+  @UseGuards(APIKeyGuard)
+  @UseInterceptors(APIUsageInterceptor)
+  @Get(':id')
+  getCollection(@Param('id') id: string): Promise<Order> {
+    return this.orderService.get(id);
+  }
+
+  @ApiSecurity('api-key')
   @ApiOperation({ summary: 'Archive Order', description: 'Archive order' })
-  @ApiBody({ type: ArchvingOrderRequestDto })
+  @ApiBody({ type: ArchiveOrderRequestDto })
   @ApiResponse({ status: 201, type: Order })
   @ApiResponse({ status: 401, description: 'Invalid API key', type: UnauthorizedErrorResponseDto })
   @Post('archive')
   @UseGuards(APIKeyGuard)
   @UseInterceptors(APIUsageInterceptor)
   @Serialize(Order)
-  archiveOrder(@Headers('api-key') apiKey: string, @Body() dto: ArchvingOrderRequestDto) {
-    return this.orderService.archvingOrder(apiKey, dto);
+  archiveOrder(@Headers('api-key') apiKey: string, @Body() dto: ArchiveOrderRequestDto) {
+    return this.orderService.archiveOrder(apiKey, dto);
   }
 
   @ApiSecurity('api-key')
   @ApiOperation({ summary: 'Task Order', description: 'Task order' })
-  @ApiBody({ type: TaskingOrderRequestDto })
+  @ApiBody({ type: TaskOrderRequestDto })
   @ApiResponse({ status: 201, type: Order })
   @ApiResponse({ status: 401, description: 'Invalid API key', type: UnauthorizedErrorResponseDto })
   @Post('task')
   @UseGuards(APIKeyGuard)
   @UseInterceptors(APIUsageInterceptor)
   @Serialize(Order)
-  taskOrder(@Headers('api-key') apiKey: string, @Body() dto: TaskingOrderRequestDto) {
-    return this.orderService.taksingOrder(apiKey, dto);
+  taskOrder(@Headers('api-key') apiKey: string, @Body() dto: TaskOrderRequestDto) {
+    return this.orderService.taskOrder(apiKey, dto);
   }
 
   @ApiSecurity('api-key')
@@ -92,7 +106,19 @@ export class OrderController {
   @Patch(':id/cancel')
   @UseGuards(APIKeyGuard)
   @UseInterceptors(APIUsageInterceptor)
-  cancel(@Headers('api-key') apiKey: string, @Param('id') id: number) {
-    return this.orderService.cancel(apiKey, +id);
+  cancel(@Headers('api-key') apiKey: string, @Param('id') id: string) {
+    return this.orderService.cancel(apiKey, id);
+  }
+
+  @ApiSecurity('api-key')
+  @ApiOperation({ summary: 'Approve Order', description: 'Approve order' })
+  @ApiResponse({ status: 200, description: 'Ok', example: { message: 'Order approved successful.' } })
+  @ApiResponse({ status: 401, description: 'Invalid API key', type: UnauthorizedErrorResponseDto })
+  @ApiResponse({ status: 404, description: 'Not Found', type: NotFoundErrorResponseDto })
+  @Patch(':id/approve')
+  @UseGuards(APIKeyGuard)
+  @UseInterceptors(APIUsageInterceptor)
+  approve(@Headers('api-key') apiKey: string, @Param('id') id: string) {
+    return this.orderService.approve(apiKey, id);
   }
 }

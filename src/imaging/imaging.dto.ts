@@ -39,14 +39,22 @@ export class Geometry {
     @IsString()
     type: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        example: [[
+            [127.0, 37.5],
+            [127.1, 37.5],
+            [127.1, 37.6],
+            [127.0, 37.6],
+            [127.0, 37.5]
+        ]]
+    })
     @IsArray()
     @Type(() => Array)
     coordinates: number[][][];
 }
 
 export class CollectConstraint {
-    @ApiProperty({ example: ImagingMode.Stripmap })
+    @ApiProperty({ example: ImagingMode.STRIPMAP })
     @IsEnum(ImagingMode)
     imagingMode: ImagingMode;
 
@@ -58,11 +66,11 @@ export class CollectConstraint {
     @IsNumber()
     resolution: number;
 
-    @ApiProperty({ example: 20 })
+    @ApiProperty({ example: 15 })
     @IsNumber()
     minIncidenceAngle: number;
 
-    @ApiProperty({ example: 50 })
+    @ApiProperty({ example: 35 })
     @IsNumber()
     maxIncidenceAngle: number;
 

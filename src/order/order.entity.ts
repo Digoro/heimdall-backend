@@ -1,18 +1,22 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Catalog } from "src/catalog/catalog.entity";
 import { Imaging } from "src/imaging/imaging.entity";
 import { ProductType } from "src/product/product.dto";
 import { BasicEntity } from "src/shared/model/basic.entity";
 import { User } from "src/user/user.entity";
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { OrderStatus, OrderType } from "./order.dto";
 import { Expose } from "class-transformer";
+import { CatalogItem } from "src/catalog/catalog.entity";
 
 @Entity({ name: 'TB_ORDER' })
 export class Order extends BasicEntity {
     @Expose()
-    @ApiProperty({ example: OrderType.ARCHVING_ORDER })
-    @Column({ type: 'enum', enum: OrderType, default: OrderType.ARCHVING_ORDER })
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
+    @Expose()
+    @ApiProperty({ example: OrderType.ARCHIVE })
+    @Column({ type: 'enum', enum: OrderType, default: OrderType.ARCHIVE })
     type: OrderType;
 
     @Expose()
@@ -21,8 +25,8 @@ export class Order extends BasicEntity {
     productType: ProductType;
 
     @Expose()
-    @ApiProperty({ example: OrderStatus.PENDING })
-    @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
+    @ApiProperty({ example: OrderStatus.RECEIVED })
+    @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.RECEIVED })
     status: OrderStatus;
 
     @Expose()
@@ -33,12 +37,12 @@ export class Order extends BasicEntity {
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
     @Column({ nullable: true })
-    pendingAt: Date;
+    receivedAt: Date;
 
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
     @Column({ nullable: true })
-    approvedAt: Date;
+    estimatingAt: Date;
 
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
@@ -48,7 +52,32 @@ export class Order extends BasicEntity {
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
     @Column({ nullable: true })
-    completedAt: Date;
+    pendingAt: Date;
+
+    @Expose()
+    @ApiProperty({ example: new Date().toISOString() })
+    @Column({ nullable: true })
+    canceledAt: Date;
+
+    @Expose()
+    @ApiProperty({ example: new Date().toISOString() })
+    @Column({ nullable: true })
+    approvedAt: Date;
+
+    @Expose()
+    @ApiProperty({ example: new Date().toISOString() })
+    @Column({ nullable: true })
+    scheduledAt: Date;
+
+    @Expose()
+    @ApiProperty({ example: new Date().toISOString() })
+    @Column({ nullable: true })
+    collectingAt: Date;
+
+    @Expose()
+    @ApiProperty({ example: new Date().toISOString() })
+    @Column({ nullable: true })
+    processingAt: Date;
 
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
@@ -58,21 +87,26 @@ export class Order extends BasicEntity {
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
     @Column({ nullable: true })
-    canceledAt: Date;
+    qaAt: Date;
+
+    @Expose()
+    @ApiProperty({ example: new Date().toISOString() })
+    @Column({ nullable: true })
+    deliveredAt: Date;
 
     @ManyToOne(() => User, entity => entity.orders)
     @JoinColumn({ name: 'userId' })
     user: User;
 
     @Expose()
-    @ApiProperty({ type: () => Catalog })
-    @ManyToOne(() => Catalog, entity => entity.orders)
-    @JoinColumn({ name: 'catalogId' })
-    catalog: Catalog;
+    @ApiProperty({ type: () => CatalogItem, required: false })
+    @ManyToOne(() => CatalogItem, entity => entity.orders)
+    @JoinColumn({ name: 'itemId' })
+    item?: CatalogItem;
 
     @Expose()
-    @ApiProperty({ type: () => Imaging })
+    @ApiProperty({ type: () => Imaging, required: false })
     @ManyToOne(() => Imaging, entity => entity.orders)
     @JoinColumn({ name: 'imagingId' })
-    imaging: Imaging;
+    imaging?: Imaging;
 }

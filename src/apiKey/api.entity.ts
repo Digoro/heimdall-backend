@@ -1,13 +1,16 @@
 import { Exclude } from "class-transformer";
 import { BasicEntity } from "src/shared/model/basic.entity";
 import { User } from "src/user/user.entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { APIKeyStauts } from "./api.dto";
 
 @Entity({ name: 'TB_API_KEY' })
 export class APIKey extends BasicEntity {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
     @Exclude()
-    @Column({ type: 'text' })
+    @Column({ type: 'text', unique: true })
     hashKey: string;
 
     @Column({ type: 'text' })
@@ -32,6 +35,9 @@ export class APIKey extends BasicEntity {
 
 @Entity({ name: 'TB_API_FEATURE_USAGE' })
 export class APIFeatureUsage extends BasicEntity {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
     @Column({ length: 50 })
     feature: string;
 

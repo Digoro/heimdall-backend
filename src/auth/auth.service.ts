@@ -9,6 +9,9 @@ const bcrypt = require('bcrypt');
 
 @Injectable()
 export class AuthService {
+  FIFTEEN_MIN = 15 * 60 * 1000;
+  SEVEN_DAY = 7 * 24 * 60 * 60 * 1000;
+
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private jwtService: JwtService,
@@ -65,11 +68,11 @@ export class AuthService {
     }
     const accessToken = this.jwtService.sign(data, {
       secret: this.configService.get("JWT_ACCESS_TOKEN_SECRET"),
-      expiresIn: '7d'
+      expiresIn: this.FIFTEEN_MIN
     });
     const refreshToken = this.jwtService.sign(data, {
       secret: this.configService.get("JWT_REFRESH_TOKEN_SECRET"),
-      expiresIn: '15m'
+      expiresIn: this.SEVEN_DAY
     });
 
     return { accessToken, refreshToken };
@@ -87,11 +90,11 @@ export class AuthService {
     return await this.userRepository.findOneBy({ email })
   }
 
-  async findById(id: number): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     return await this.userRepository.findOneBy({ id })
   }
 
-  async logout(userId: number) {
+  async logout(userId: string) {
     return await this.userRepository.update(userId, { refreshToken: '' });
   }
 }

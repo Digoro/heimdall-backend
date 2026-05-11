@@ -20,7 +20,7 @@ export class APIService {
         private userService: UserService
     ) { }
 
-    async searchByUser(userId: number, dto: PaginationSearchDto): Promise<Pagination<APIKey>> {
+    async searchByUser(userId: string, dto: PaginationSearchDto): Promise<Pagination<APIKey>> {
         const options = { page: dto.page, limit: dto.limit };
         const query = this.apiKeyRepository.createQueryBuilder('apiKey')
             .leftJoin('apiKey.user', 'user')
@@ -47,7 +47,7 @@ export class APIService {
         return visible + masked;
     }
 
-    async create(userId: number, dto: CreateAPIKeyDto): Promise<ResponseCreateAPIKey> {
+    async create(userId: string, dto: CreateAPIKeyDto): Promise<ResponseCreateAPIKey> {
         const user = (await this.authService.findById(userId))!;
         const key = this.generateAPIKey();
         const hashKey = this.hashAPIKey(key);
@@ -57,13 +57,13 @@ export class APIService {
         return { key, maskKey };
     }
 
-    async update(id: number, dto: UpdateApiKeyStatusDto): Promise<{ status: string }> {
+    async update(id: string, dto: UpdateApiKeyStatusDto): Promise<{ status: string }> {
         const apiKey = await this.findById(id);
         const newApiKey = await this.apiKeyRepository.save(Object.assign(apiKey, dto));
         return { status: newApiKey.status };
     }
 
-    async findById(id: number): Promise<APIKey> {
+    async findById(id: string): Promise<APIKey> {
         const apiKey = (await this.apiKeyRepository.findOneBy({ id }))!;
         return apiKey;
     }
@@ -84,8 +84,8 @@ export class APIService {
         await this.update(apiKey.id, { lastUsedAt: new Date() });
 
         const paidFeatures: PaidFeature[] = [
-            { feature: OrderType.ARCHVING_ORDER, url: '/api/orders/archive', method: 'POST', point: 1 },
-            { feature: OrderType.TASKING_ORDER, url: '/api/orders/task', method: 'POST', point: 1 },
+            { feature: OrderType.ARCHIVE, url: '/api/orders/archive', method: 'POST', point: 1 },
+            { feature: OrderType.TASK, url: '/api/orders/task', method: 'POST', point: 1 },
         ];
 
         const paidFeature = paidFeatures.find(f => f.url == request.url && f.method == request.method);
@@ -118,7 +118,7 @@ export class APIService {
     }
 
     //TODO: API_FEATURE_USAGE 참조되서 삭제 안됨
-    async delete(id: number) {
+    async delete(id: string) {
         this.apiKeyRepository.delete(id);
     }
 }

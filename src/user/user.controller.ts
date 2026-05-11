@@ -31,14 +31,14 @@ export class UserController {
   @Roles(Role.ADMIN)
   @UseGuards(JwtGuard, RolesGuard)
   @Delete('admin/:id')
-  async delete(@Param('id') id: number) {
+  async delete(@Param('id') id: string) {
     return await this.userService.delete(id);
   }
 
   @Roles(Role.ADMIN)
   @UseGuards(JwtGuard, RolesGuard)
   @Put('admin/:id')
-  async update(@Param('id') id: number, @Body() dto: UserUpdateDto) {
+  async update(@Param('id') id: string, @Body() dto: UserUpdateDto) {
     return await this.userService.update(id, dto);
   }
 }

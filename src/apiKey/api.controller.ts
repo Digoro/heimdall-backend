@@ -26,13 +26,13 @@ export class APIKeyController {
 
   @UseGuards(JwtGuard)
   @Put('/status/:id')
-  async update(@Param('id') id: number, @Body() dto: UpdateApiKeyStatusDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateApiKeyStatusDto) {
     return await this.apiService.update(id, dto);
   }
 
   @UseGuards(JwtGuard)
   @Delete('/:id')
-  async delete(@Param('id') id: number) {
+  async delete(@Param('id') id: string) {
     return await this.apiService.delete(id);
   }
 }

@@ -3,27 +3,27 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { APIService } from 'src/apiKey/api.service';
 import { Repository } from 'typeorm';
-import { ArchvingOrderRequestDto, OrderSearchDto, OrderStatus, OrderType, OrderUpdateDto, TaskingOrderRequestDto } from './order.dto';
+import { ArchiveOrderRequestDto, OrderSearchDto, OrderStatus, OrderType, OrderUpdateDto, TaskOrderRequestDto } from './order.dto';
 import { Order } from './order.entity';
-import { CatalogService } from 'src/catalog/catalog.service';
 import { ImagingService } from 'src/imaging/imaging.service';
 import { Imaging } from 'src/imaging/imaging.entity';
 import { UserService } from 'src/user/user.service';
+import { CatalogService } from 'src/catalog/catalog.service';
 
 @Injectable()
 export class OrderService {
     constructor(
         @InjectRepository(Order) private orderRepository: Repository<Order>,
         private apiService: APIService,
-        private catalogService: CatalogService,
+        private collectionService: CatalogService,
         private imagingService: ImagingService,
         private userService: UserService
     ) { }
 
-    async get(id: number): Promise<Order> {
+    async get(id: string): Promise<Order> {
         const order = await this.orderRepository.createQueryBuilder('order')
             .leftJoinAndSelect('order.user', 'user')
-            .leftJoinAndSelect('order.catalog', 'catalog')
+            .leftJoinAndSelect('order.item', 'item')
             .leftJoinAndSelect('order.imaging', 'imaging')
             .where('order.id = :id', { id }).getOne();
         if (!order) {
@@ -36,7 +36,7 @@ export class OrderService {
         const options = { page: dto.page, limit: dto.limit };
         const query = this.orderRepository.createQueryBuilder('order')
             .leftJoinAndSelect('order.user', 'user')
-            .leftJoinAndSelect('order.catalog', 'catalog')
+            .leftJoinAndSelect('order.item', 'item')
             .leftJoinAndSelect('order.imaging', 'imaging')
             .orderBy('order.createdAt', 'DESC')
         if (dto?.email) {
@@ -58,7 +58,7 @@ export class OrderService {
         const options = { page: dto.page, limit: dto.limit };
         const query = this.orderRepository.createQueryBuilder('order')
             .leftJoin('order.user', 'user')
-            .leftJoinAndSelect('order.catalog', 'catalog')
+            .leftJoinAndSelect('order.item', 'item')
             .leftJoinAndSelect('order.imaging', 'imaging')
             .where('user.id = :userId', { userId: apiKey.user.id })
             .orderBy('order.createdAt', 'DESC')
@@ -73,32 +73,56 @@ export class OrderService {
         return results;
     }
 
-    async updateStatus(id: number, dto: OrderUpdateDto): Promise<any> {
+    async updateStatus(id: string, dto: OrderUpdateDto): Promise<any> {
         const order = await this.findById(id);
 
         switch (dto.status) {
-            case OrderStatus.PENDING: {
-                await this.orderRepository.update(id, { status: dto.status, pendingAt: new Date() });
+            case OrderStatus.RECEIVED: {
+                await this.orderRepository.update(id, { status: dto.status, receivedAt: new Date() });
                 break;
             }
-            case OrderStatus.APPROVED: {
-                await this.orderRepository.update(id, { status: dto.status, approvedAt: new Date() });
+            case OrderStatus.ESTIMATING: {
+                await this.orderRepository.update(id, { status: dto.status, estimatingAt: new Date() });
                 break;
             }
             case OrderStatus.REJECTED: {
                 await this.orderRepository.update(id, { status: dto.status, rejectedAt: new Date() });
                 break;
             }
-            case OrderStatus.COMPLETED: {
-                await this.orderRepository.update(id, { status: dto.status, completedAt: new Date() });
+            case OrderStatus.PENDING: {
+                await this.orderRepository.update(id, { status: dto.status, pendingAt: new Date() });
+                break;
+            }
+            case OrderStatus.CANCELED: {
+                await this.orderRepository.update(id, { status: dto.status, canceledAt: new Date() });
+                break;
+            }
+            case OrderStatus.APPROVED: {
+                await this.orderRepository.update(id, { status: dto.status, approvedAt: new Date() });
+                break;
+            }
+            case OrderStatus.SCHEDULED: {
+                await this.orderRepository.update(id, { status: dto.status, scheduledAt: new Date() });
+                break;
+            }
+            case OrderStatus.COLLECTING: {
+                await this.orderRepository.update(id, { status: dto.status, collectingAt: new Date() });
+                break;
+            }
+            case OrderStatus.PROCESSING: {
+                await this.orderRepository.update(id, { status: dto.status, processingAt: new Date() });
                 break;
             }
             case OrderStatus.FAILED: {
                 await this.orderRepository.update(id, { status: dto.status, failedAt: new Date() });
                 break;
             }
-            case OrderStatus.CANCELED: {
-                await this.orderRepository.update(id, { status: dto.status, canceledAt: new Date() });
+            case OrderStatus.QA: {
+                await this.orderRepository.update(id, { status: dto.status, qaAt: new Date() });
+                break;
+            }
+            case OrderStatus.DELIVERED: {
+                await this.orderRepository.update(id, { status: dto.status, deliveredAt: new Date() });
                 break;
             }
         }
@@ -106,26 +130,26 @@ export class OrderService {
         return await this.get(order!.id);
     }
 
-    async findById(id: number): Promise<Order | null> {
+    async findById(id: string): Promise<Order | null> {
         return await this.orderRepository.findOneBy({ id })
     }
 
-    async archvingOrder(key: string, dto: ArchvingOrderRequestDto) {
+    async archiveOrder(key: string, dto: ArchiveOrderRequestDto) {
         const apiKey = (await this.apiService.findByKey(key))!;
-        const catalog = await this.catalogService.get(dto.catalogId);
-        if (!catalog) throw new NotFoundException();
+        const item = await this.collectionService.getItem(dto.collectionId, dto.itemId, false);
+        if (!item) throw new NotFoundException();
 
         const order = await this.orderRepository.save(this.orderRepository.create({
-            type: OrderType.ARCHVING_ORDER,
+            type: OrderType.ARCHIVE,
             user: { id: apiKey.user.id },
-            catalog: { id: dto.catalogId },
+            item: { id: item.id },
             productType: dto.productType
         } as Order));
 
         return await this.get(order.id);
     }
 
-    async taksingOrder(key: string, dto: TaskingOrderRequestDto) {
+    async taskOrder(key: string, dto: TaskOrderRequestDto) {
         const apiKey = (await this.apiService.findByKey(key))!;
 
         const newImaging = new Imaging();
@@ -145,7 +169,7 @@ export class OrderService {
         const imaging = await this.imagingService.add(newImaging);
 
         const newOrder = await this.orderRepository.save(this.orderRepository.create({
-            type: OrderType.TASKING_ORDER,
+            type: OrderType.TASK,
             user: { id: apiKey.user.id },
             imaging: { id: imaging.id },
             productType: dto.properties.productType
@@ -154,7 +178,7 @@ export class OrderService {
         return await this.get(newOrder.id);
     }
 
-    async cancel(key: string, id: number) {
+    private async patchStatus(status: OrderStatus, key: string, id: string) {
         const apiKey = (await this.apiService.findByKey(key))!;
         const user = (await this.userService.findById(apiKey.user.id))!;
         const order = await this.orderRepository.createQueryBuilder('order')
@@ -164,10 +188,23 @@ export class OrderService {
             .getExists();
 
         if (order) {
-            await this.orderRepository.update(id, { status: OrderStatus.CANCELED, canceledAt: new Date() });
+            await this.orderRepository.update(id, { status: status, canceledAt: new Date() });
             return { message: 'Order canceled successful.' }
         } else {
             throw new NotFoundException();
         }
+    }
+
+    async cancel(key: string, id: string) {
+        return this.patchStatus(OrderStatus.CANCELED, key, id);
+    }
+
+    async update(orderId: string, data: any) {
+        await this.orderRepository.update(orderId, {
+        })
+    }
+
+    async approve(key: string, id: string) {
+        return this.patchStatus(OrderStatus.APPROVED, key, id);
     }
 }
