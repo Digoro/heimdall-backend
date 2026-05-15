@@ -107,6 +107,11 @@ export class CatalogService {
     }
 
     private serializeItem(item: CatalogItem) {
+        item.stacExtensions = [
+            "https://stac-extensions.github.io/sar/v1.0.0/schema.json",
+            "https://stac-extensions.github.io/sat/v1.0.0/schema.json",
+            "https://stac-extensions.github.io/view/v1.0.0/schema.json"
+        ];
         item.links = [
             { rel: 'self', href: `${this.baseUrl}/catalog/collections/${item.collection}/items` },
             { rel: 'items', href: `${this.baseUrl}/catalog/collections/${item.collection}` },

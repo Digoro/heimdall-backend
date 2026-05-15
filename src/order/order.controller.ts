@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Patch, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Patch, Post, Put, UseGuards, Request, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiExcludeEndpoint, ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { Roles } from 'src/shared/decorator/roles.decorator';
@@ -7,12 +7,12 @@ import { RolesGuard } from 'src/shared/guard/roles-guard';
 import { APIUsageInterceptor } from 'src/shared/interceptor/api-usage.interceptor';
 import { APIPaginationResponse as ApiPaginationResponse } from 'src/shared/interface/api-pagination-response';
 import { NotFoundErrorResponseDto, UnauthorizedErrorResponseDto } from 'src/shared/interface/error-response.dto';
-import { Role } from 'src/user/user.dto';
 import { ArchiveOrderRequestDto, OrderSearchDto, OrderUpdateDto, TaskOrderRequestDto } from './order.dto';
 import { Order } from './order.entity';
 import { OrderService } from './order.service';
 import { Serialize, SerializeList } from 'src/shared/decorator/serialize.decorator';
 import { JwtGuard } from 'src/auth/jwt.guard';
+import * as userDto from 'src/user/user.dto';
 
 @ApiTags('Orders')
 @Controller('api/orders')
@@ -23,7 +23,7 @@ export class OrderController {
   ) { }
 
   @ApiExcludeEndpoint()
-  @Roles(Role.ADMIN)
+  @Roles(userDto.Role.ADMIN)
   @UseGuards(JwtGuard, RolesGuard)
   @Get('admin/:id')
   get(@Param('id') id: string): Promise<Order> {
@@ -31,7 +31,7 @@ export class OrderController {
   }
 
   @ApiExcludeEndpoint()
-  @Roles(Role.ADMIN)
+  @Roles(userDto.Role.ADMIN)
   @UseGuards(JwtGuard, RolesGuard)
   @Post('admin/search')
   searchByAdmin(@Body() dto: OrderSearchDto): Promise<Pagination<Order>> {
@@ -39,11 +39,12 @@ export class OrderController {
   }
 
   @ApiExcludeEndpoint()
-  @Roles(Role.ADMIN)
+  @Roles(userDto.Role.ADMIN)
   @UseGuards(JwtGuard, RolesGuard)
   @Put('admin/:id/status')
-  async updateStatus(@Param('id') id: string, @Body() dto: OrderUpdateDto) {
-    return await this.orderService.updateStatus(id, dto);
+  async updateStatus(@Request() request, @Param('id') id: string, @Body() dto: OrderUpdateDto) {
+    const userId = request.user.id;
+    return await this.orderService.updateStatus(id, userId, dto);
   }
 
   @ApiSecurity('api-key')
@@ -120,5 +121,10 @@ export class OrderController {
   @UseInterceptors(APIUsageInterceptor)
   approve(@Headers('api-key') apiKey: string, @Param('id') id: string) {
     return this.orderService.approve(apiKey, id);
+  }
+
+  @Post('webhook')
+  webhook(@Body() data: userDto.WebhookPayload) {
+    console.log(data);
   }
 }

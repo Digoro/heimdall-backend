@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { Brackets, Repository } from 'typeorm';
-import { UserSearchDto, UserUpdateDto } from './user.dto';
+import { UpdateWebhookDto, UserSearchDto, UserUpdateDto } from './user.dto';
 import { User } from './user.entity';
 
 @Injectable()
@@ -55,5 +55,34 @@ export class UserService {
             .update()
             .set({ monthlyUsage: 0 })
             .execute();
+    }
+
+    async registerWebhook(id: string, dto: UpdateWebhookDto) {
+        if (dto.isEditWebhookSecret) {
+            await this.userRepository.update(id, { webhookUrl: dto.webhookUrl, webhookSecret: dto.webhookSecret });
+
+        } else {
+            await this.userRepository.update(id, { webhookUrl: dto.webhookUrl });
+        }
+
+        return {
+            webhookUrl: dto.webhookUrl,
+            isExsitWebhookSecret: !!dto.webhookSecret
+        }
+    }
+
+    async getWebhook(id: string) {
+        const user = await this.userRepository.findOne({ where: { id } });
+        return {
+            webhookUrl: user?.webhookUrl ?? null,
+            isExsitWebhookSecret: !!user?.webhookSecret
+        }
+    }
+
+    async deleteWebhook(id: string) {
+        await this.userRepository.update(id, { webhookUrl: '', webhookSecret: '' });
+        return {
+            message: 'Webhook deleted successful.'
+        }
     }
 }

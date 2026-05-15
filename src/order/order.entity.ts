@@ -31,8 +31,12 @@ export class Order extends BasicEntity {
 
     @Expose()
     @ApiProperty({ example: 'http://downloads.oms.com/q=fq8934fQ2NIO3F' })
-    @Column({ type: 'text', nullable: true })
-    downloadUrl: string;
+    @Column({ type: 'jsonb', nullable: true })
+    downloadUrl: {
+        data: string;
+        metadata: string;
+        thumbnail: string;
+    };
 
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
@@ -93,6 +97,16 @@ export class Order extends BasicEntity {
     @ApiProperty({ example: new Date().toISOString() })
     @Column({ nullable: true })
     deliveredAt: Date;
+
+    @Expose()
+    @ApiProperty({ example: new Date().toISOString() })
+    @Column({ nullable: true })
+    estimatedDeliveryDate: Date;
+
+    @Expose()
+    @ApiProperty({ example: new Date().toISOString() })
+    @Column({ nullable: true })
+    estimatedCollectionDate: Date;
 
     @ManyToOne(() => User, entity => entity.orders)
     @JoinColumn({ name: 'userId' })

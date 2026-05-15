@@ -4,6 +4,7 @@ import { Order } from "src/order/order.entity";
 import { BasicEntity } from "src/shared/model/basic.entity";
 import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Role } from "./user.dto";
+import { OrderStatus } from "src/order/order.dto";
 const bcrypt = require('bcrypt');
 
 @Entity({ name: 'TB_USER' })
@@ -11,7 +12,7 @@ export class User extends BasicEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ unique: true, nullable: true })
+    @Column({ nullable: true })
     refreshToken: string;
 
     @Column({ unique: true, length: 255 })
@@ -45,6 +46,12 @@ export class User extends BasicEntity {
     @Column({ default: false })
     isApproved: boolean;
 
+    @Column({ nullable: true })
+    webhookUrl: string;
+
+    @Column({ nullable: true })
+    webhookSecret: string;
+
     @OneToMany(() => Order, entity => entity.user)
     orders: Order[];
 
@@ -59,4 +66,28 @@ export class User extends BasicEntity {
     comparePassword(attempPassword: string): boolean {
         return bcrypt.compare(attempPassword, this.password);
     }
+}
+
+@Entity({ name: 'TB_WEBHOOK_LOG' })
+export class WebhookLog extends BasicEntity {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
+    @Column()
+    orderId: string;
+
+    @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.RECEIVED })
+    status: OrderStatus;
+
+    @Column({ type: 'jsonb' })
+    payload: object;
+
+    @Column({ nullable: true })
+    responseCode: number;
+
+    @Column({ default: true })
+    success: boolean;
+
+    @Column({ default: 1 })
+    attemp: number;
 }

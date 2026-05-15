@@ -110,6 +110,10 @@ export class CatalogItem extends BasicEntity {
     stacVersion: string;
 
     @Expose()
+    @ApiProperty({ description: 'A list of extensions the Item implements', example: '["https://stac-extensions.github.io/sar/v1.0.0/schema.json]' })
+    stacExtensions: string[];
+
+    @Expose()
     @ApiProperty({ description: 'Collection ID this item belongs to', example: 'cosmos' })
     @Column()
     collection: string;
@@ -129,36 +133,69 @@ export class CatalogItem extends BasicEntity {
     @Column({ type: 'jsonb' })
     properties: {
         title: string;
+        mission: string;
+        platform: string;
         datetime: string;
         start_datetime: string;
         end_datetime: string;
-        platform: string;
-        mission: string;
-        instruments: string;
+        instruments: string[]; // ["sar"] 
 
         // SAR Extension
-        'sar:instrument_mode': string;
         'sar:product_type': string;
-        'sar:frequency_band': string;
-        'sar:center_frequency': number;
-        'sar:polarizations': string[];
+        'sar:instrument_mode': string;
         'sar:observation_direction': string;
+        'sar:polarizations': string[];
+        'sar:center_frequency': number;
         'sar:pixel_spacing_range': number;
         'sar:pixel_spacing_azimuth': number;
         'sar:looks_range': number;
         'sar:looks_azimuth': number;
-        'sar:beam_ids': string[];
 
         // View Extension
-        'view:look_direction': string;
-        'view:azimuth': number;
         'view:incidence_angle': number;
 
         // Satellite Extension
         'sat:orbit_state': string;
 
-        // Cosmos
-        'cosmos:resolution': number;
+        // COSMOS Extension
+        'cosmos:sample_format': number;
+        'cosmos:scene_sensing_center_utc': number;
+        'cosmos:antenna_length': number;
+        'cosmos:antenna_beamwidth': number;
+        'cosmos:reference_utc': number;
+        'cosmos:number_of_state_vectors': number;
+        'cosmos:state_vector_times': number;
+        'cosmos:attitude_quaternions': number;
+        'cosmos:ecef_satellite_position': number;
+        'cosmos:ecef_satellite_velocity': number;
+        'cosmos:roll_angle': number;
+        'cosmos:yaw_angle': number;
+        'cosmos:pitch_angle': number;
+        'cosmos:heading': number;
+        'cosmos:echo_sampling_window_length': number;
+        'cosmos:prf': number;
+        'cosmos:range_chirp_length': number;
+        'cosmos:range_chirp_rate': number;
+        'cosmos:rank': number;
+        'cosmos:sampling_rate': number;
+        'cosmos:range_first_time': number;
+        'cosmos:range_samples': number;
+        'cosmos:azimuth_lines': number;
+        'cosmos:doppler_bandwidth': number;
+        'cosmos:doppler_polynomial': number;
+        'cosmos:doppler_polynomial_dot': number;
+        'cosmos:effective_velocity': number;
+        'cosmos:range_focusing_bandwidth': number;
+        'cosmos:center_latitude': number;
+        'cosmos:center_longitude': number;
+        'cosmos:near_range_slc': number;
+        'cosmos:center_range_slc': number;
+        'cosmos:far_range_slc': number;
+        'cosmos:far_incidence_angle': number;
+        'cosmos:near_incidence_angle': number;
+        'cosmos:center_incidence_angle': number;
+        'cosmos:far_look_angle': number;
+        'cosmos:near_look_angle': number;
     };
 
     @Expose()
