@@ -3,7 +3,7 @@ import { Imaging } from "src/imaging/imaging.entity";
 import { ProductType } from "src/product/product.dto";
 import { BasicEntity } from "src/shared/model/basic.entity";
 import { User } from "src/user/user.entity";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { OrderStatus, OrderType } from "./order.dto";
 import { Expose } from "class-transformer";
 import { CatalogItem } from "src/catalog/catalog.entity";
@@ -30,73 +30,19 @@ export class Order extends BasicEntity {
     status: OrderStatus;
 
     @Expose()
-    @ApiProperty({ example: 'http://downloads.oms.com/q=fq8934fQ2NIO3F' })
+    @ApiProperty({
+        example: {
+            data: 'http://oms.com/orders/bd243b7e-bbab-48f2-9cd4-74b5f9d48fae/download/data',
+            metadata: 'http://oms.com/orders/bd243b7e-bbab-48f2-9cd4-74b5f9d48fae/download/metadata',
+            thumbnail: 'http://oms.com/orders/bd243b7e-bbab-48f2-9cd4-74b5f9d48fae/download/thumbnail',
+        }
+    })
     @Column({ type: 'jsonb', nullable: true })
     downloadUrl: {
         data: string;
         metadata: string;
         thumbnail: string;
     };
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    receivedAt: Date;
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    estimatingAt: Date;
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    rejectedAt: Date;
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    pendingAt: Date;
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    canceledAt: Date;
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    approvedAt: Date;
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    scheduledAt: Date;
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    collectingAt: Date;
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    processingAt: Date;
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    failedAt: Date;
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    qaAt: Date;
-
-    @Expose()
-    @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
-    deliveredAt: Date;
 
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
@@ -123,4 +69,40 @@ export class Order extends BasicEntity {
     @ManyToOne(() => Imaging, entity => entity.orders)
     @JoinColumn({ name: 'imagingId' })
     imaging?: Imaging;
+
+    @Expose()
+    @ApiProperty({ type: () => [OrderStatusHistory] })
+    @OneToMany(() => OrderStatusHistory, entity => entity.order)
+    statusHistory: OrderStatusHistory[];
+}
+
+
+@Entity({ name: 'TB_ORDER_STATUS_HISTORY' })
+export class OrderStatusHistory extends BasicEntity {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
+    @ManyToOne(() => Order, entity => entity.statusHistory)
+    @JoinColumn({ name: 'orderId' })
+    order: Order;
+
+    @Expose()
+    @ApiProperty({ example: OrderStatus.ESTIMATING })
+    @Column({ type: 'enum', enum: OrderStatus })
+    fromStatus: OrderStatus;
+
+    @Expose()
+    @ApiProperty({ example: OrderStatus.REJECTED })
+    @Column({ type: 'enum', enum: OrderStatus })
+    toStatus: OrderStatus;
+
+    @Expose()
+    @ApiProperty({ example: "Mission conflict" })
+    @Column({ nullable: true })
+    reason: string;
+
+    @Expose()
+    @ApiProperty({ example: new Date().toISOString() })
+    @CreateDateColumn()
+    changedAt: Date;
 }

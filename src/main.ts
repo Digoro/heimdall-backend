@@ -24,7 +24,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Order Management System API')
     .setDescription('COSMOS imagery ordering API')
-    .setVersion('1.0.0')
+    .setVersion('1.1.0')
     .addSecurity('api-key', {
       type: 'apiKey',
       in: 'header',

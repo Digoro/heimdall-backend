@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { APIService } from 'src/apiKey/api.service';
 import { Repository } from 'typeorm';
-import { ArchiveOrderRequestDto, OrderSearchDto, OrderStatus, OrderType, OrderUpdateDto, TaskOrderRequestDto } from './order.dto';
-import { Order } from './order.entity';
+import { ArchiveOrderRequestDto, OrderSearchDto, OrderStatus, OrderType, OrderStatusUpdateDto, TaskOrderRequestDto } from './order.dto';
+import { Order, OrderStatusHistory } from './order.entity';
 import { ImagingService } from 'src/imaging/imaging.service';
 import { Imaging } from 'src/imaging/imaging.entity';
 import { UserService } from 'src/user/user.service';
@@ -17,6 +17,7 @@ export class OrderService {
 
     constructor(
         @InjectRepository(Order) private orderRepository: Repository<Order>,
+        @InjectRepository(OrderStatusHistory) private orderHistoryRepository: Repository<OrderStatusHistory>,
         private apiService: APIService,
         private collectionService: CatalogService,
         private imagingService: ImagingService,
@@ -29,7 +30,10 @@ export class OrderService {
             .leftJoinAndSelect('order.user', 'user')
             .leftJoinAndSelect('order.item', 'item')
             .leftJoinAndSelect('order.imaging', 'imaging')
-            .where('order.id = :id', { id }).getOne();
+            .leftJoinAndSelect('order.statusHistory', 'statusHistory')
+            .where('order.id = :id', { id })
+            .getOne();
+
         if (!order) {
             throw new NotFoundException();
         }
@@ -42,6 +46,7 @@ export class OrderService {
             .leftJoinAndSelect('order.user', 'user')
             .leftJoinAndSelect('order.item', 'item')
             .leftJoinAndSelect('order.imaging', 'imaging')
+            .leftJoinAndSelect('order.statusHistory', 'statusHistory')
             .orderBy('order.createdAt', 'DESC')
         if (dto?.email) {
             query.andWhere('user.email like :keyword', { keyword: `%${dto.email}%` })
@@ -64,6 +69,7 @@ export class OrderService {
             .leftJoin('order.user', 'user')
             .leftJoinAndSelect('order.item', 'item')
             .leftJoinAndSelect('order.imaging', 'imaging')
+            .leftJoinAndSelect('order.statusHistory', 'statusHistory')
             .where('user.id = :userId', { userId: apiKey.user.id })
             .orderBy('order.createdAt', 'DESC')
         if (dto?.statusList?.length > 0) {
@@ -77,59 +83,15 @@ export class OrderService {
         return results;
     }
 
-    async updateStatus(orderId: string, userId: string, dto: OrderUpdateDto): Promise<any> {
+    async updateStatus(orderId: string, userId: string, dto: OrderStatusUpdateDto): Promise<any> {
         const order = (await this.findById(orderId))!;
 
-        switch (dto.status) {
-            case OrderStatus.RECEIVED: {
-                await this.orderRepository.update(orderId, { status: dto.status, receivedAt: new Date() });
-                break;
-            }
-            case OrderStatus.ESTIMATING: {
-                await this.orderRepository.update(orderId, { status: dto.status, estimatingAt: new Date() });
-                break;
-            }
-            case OrderStatus.REJECTED: {
-                await this.orderRepository.update(orderId, { status: dto.status, rejectedAt: new Date() });
-                break;
-            }
-            case OrderStatus.PENDING: {
-                await this.orderRepository.update(orderId, { status: dto.status, pendingAt: new Date() });
-                break;
-            }
-            case OrderStatus.CANCELED: {
-                await this.orderRepository.update(orderId, { status: dto.status, canceledAt: new Date() });
-                break;
-            }
-            case OrderStatus.APPROVED: {
-                await this.orderRepository.update(orderId, { status: dto.status, approvedAt: new Date() });
-                break;
-            }
-            case OrderStatus.SCHEDULED: {
-                await this.orderRepository.update(orderId, { status: dto.status, scheduledAt: new Date() });
-                break;
-            }
-            case OrderStatus.COLLECTING: {
-                await this.orderRepository.update(orderId, { status: dto.status, collectingAt: new Date() });
-                break;
-            }
-            case OrderStatus.PROCESSING: {
-                await this.orderRepository.update(orderId, { status: dto.status, processingAt: new Date() });
-                break;
-            }
-            case OrderStatus.FAILED: {
-                await this.orderRepository.update(orderId, { status: dto.status, failedAt: new Date() });
-                break;
-            }
-            case OrderStatus.QA: {
-                await this.orderRepository.update(orderId, { status: dto.status, qaAt: new Date() });
-                break;
-            }
-            case OrderStatus.DELIVERED: {
-                await this.orderRepository.update(orderId, { status: dto.status, deliveredAt: new Date() });
-                break;
-            }
-        }
+        await this.orderHistoryRepository.save({
+            order,
+            fromStatus: order.status,
+            toStatus: dto.status,
+            reason: dto.reason
+        } as OrderStatusHistory);
 
         const extra: WebhookExtra = {
             estimatedDeliveryDate: order.estimatedDeliveryDate,

@@ -7,7 +7,7 @@ import { RolesGuard } from 'src/shared/guard/roles-guard';
 import { APIUsageInterceptor } from 'src/shared/interceptor/api-usage.interceptor';
 import { APIPaginationResponse as ApiPaginationResponse } from 'src/shared/interface/api-pagination-response';
 import { NotFoundErrorResponseDto, UnauthorizedErrorResponseDto } from 'src/shared/interface/error-response.dto';
-import { ArchiveOrderRequestDto, OrderSearchDto, OrderUpdateDto, TaskOrderRequestDto } from './order.dto';
+import { ArchiveOrderRequestDto, OrderSearchDto, OrderStatusUpdateDto, TaskOrderRequestDto } from './order.dto';
 import { Order } from './order.entity';
 import { OrderService } from './order.service';
 import { Serialize, SerializeList } from 'src/shared/decorator/serialize.decorator';
@@ -42,7 +42,7 @@ export class OrderController {
   @Roles(userDto.Role.ADMIN)
   @UseGuards(JwtGuard, RolesGuard)
   @Put('admin/:id/status')
-  async updateStatus(@Request() request, @Param('id') id: string, @Body() dto: OrderUpdateDto) {
+  async updateStatus(@Request() request, @Param('id') id: string, @Body() dto: OrderStatusUpdateDto) {
     const userId = request.user.id;
     return await this.orderService.updateStatus(id, userId, dto);
   }

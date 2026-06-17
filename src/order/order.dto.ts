@@ -58,10 +58,13 @@ export class OrderSearchDto extends PaginationSearchDto {
     typeList: OrderType[];
 }
 
-export class OrderUpdateDto {
-    @IsOptional()
+export class OrderStatusUpdateDto {
     @IsEnum(OrderStatus)
     status: OrderStatus;
+
+    @IsOptional()
+    @IsString()
+    reason?: string;
 }
 
 export class ArchiveOrderRequestDto {
