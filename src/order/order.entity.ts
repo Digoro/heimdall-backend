@@ -76,7 +76,6 @@ export class Order extends BasicEntity {
     statusHistory: OrderStatusHistory[];
 }
 
-
 @Entity({ name: 'TB_ORDER_STATUS_HISTORY' })
 export class OrderStatusHistory extends BasicEntity {
     @PrimaryGeneratedColumn('uuid')

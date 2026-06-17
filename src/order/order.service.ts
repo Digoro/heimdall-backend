@@ -10,7 +10,6 @@ import { Imaging } from 'src/imaging/imaging.entity';
 import { UserService } from 'src/user/user.service';
 import { CatalogService } from 'src/catalog/catalog.service';
 import { WebhookService } from 'src/user/webhook.service';
-import { WebhookExtra } from 'src/user/user.dto';
 
 @Injectable()
 export class OrderService {
@@ -46,7 +45,6 @@ export class OrderService {
             .leftJoinAndSelect('order.user', 'user')
             .leftJoinAndSelect('order.item', 'item')
             .leftJoinAndSelect('order.imaging', 'imaging')
-            .leftJoinAndSelect('order.statusHistory', 'statusHistory')
             .orderBy('order.createdAt', 'DESC')
         if (dto?.email) {
             query.andWhere('user.email like :keyword', { keyword: `%${dto.email}%` })
@@ -59,7 +57,18 @@ export class OrderService {
         }
 
         const results = await paginate<Order>(query, options);
-        return results;
+        const items = await Promise.all(
+            results.items.map(async (order) => {
+                const history = await this.orderHistoryRepository.createQueryBuilder('history')
+                    .where('history.order = :order', { order: order.id })
+                    .getMany();
+                order.statusHistory = history;
+                return order;
+            }));
+        return {
+            items: items,
+            meta: results.meta
+        }
     }
 
     async searchByAPIKey(key: string, dto: OrderSearchDto): Promise<Pagination<Order>> {
@@ -69,7 +78,6 @@ export class OrderService {
             .leftJoin('order.user', 'user')
             .leftJoinAndSelect('order.item', 'item')
             .leftJoinAndSelect('order.imaging', 'imaging')
-            .leftJoinAndSelect('order.statusHistory', 'statusHistory')
             .where('user.id = :userId', { userId: apiKey.user.id })
             .orderBy('order.createdAt', 'DESC')
         if (dto?.statusList?.length > 0) {
@@ -80,11 +88,32 @@ export class OrderService {
         }
 
         const results = await paginate<Order>(query, options);
-        return results;
+        const items = await Promise.all(
+            results.items.map(async (order) => {
+                const history = await this.orderHistoryRepository.createQueryBuilder('history')
+                    .where('history.order = :order', { order: order.id })
+                    .getMany();
+                order.statusHistory = history;
+                return order;
+            }));
+        return {
+            items: items,
+            meta: results.meta
+        }
     }
 
     async updateStatus(orderId: string, userId: string, dto: OrderStatusUpdateDto): Promise<any> {
         const order = (await this.findById(orderId))!;
+
+        if (dto.estimatedCollectionDate) {
+            await this.orderRepository.update(orderId, { estimatedCollectionDate: dto.estimatedCollectionDate });
+        }
+
+        if (dto.estimatedDeliveryDate) {
+            await this.orderRepository.update(orderId, { estimatedDeliveryDate: dto.estimatedDeliveryDate });
+        }
+
+        await this.orderRepository.update(orderId, { status: dto.status });
 
         await this.orderHistoryRepository.save({
             order,
@@ -93,16 +122,7 @@ export class OrderService {
             reason: dto.reason
         } as OrderStatusHistory);
 
-        const extra: WebhookExtra = {
-            estimatedDeliveryDate: order.estimatedDeliveryDate,
-            estimatedCollectionDate: order.estimatedCollectionDate,
-        };
-
-        if (dto.status == OrderStatus.DELIVERED) {
-            extra.download = order.downloadUrl;
-        }
-
-        await this.webhookService.notify(orderId, userId, dto.status, extra);
+        await this.webhookService.notify(orderId, userId);
 
         return await this.get(order!.id);
     }

@@ -1,8 +1,6 @@
 import { PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsEmail, IsEnum, IsNumber, IsOptional, IsString, Length, Matches } from 'class-validator';
-import { OrderStatus } from 'src/order/order.dto';
-import { Order } from 'src/order/order.entity';
 import { PaginationSearchDto } from 'src/shared/interface/pagination.dto';
 
 export enum Role {
@@ -71,21 +69,4 @@ export class UpdateWebhookDto {
 
     @IsBoolean()
     isEditWebhookSecret: boolean;
-}
-
-export interface DownloadUrl {
-    data?: string,
-    metadata?: string;
-    thumbnail?: string;
-}
-
-export interface WebhookExtra {
-    estimatedDeliveryDate?: Date;
-    estimatedCollectionDate?: Date;
-    download?: DownloadUrl;
-};
-
-export interface WebhookPayload extends WebhookExtra {
-    order: Order;
-    status: OrderStatus;
 }

@@ -6,8 +6,6 @@ import { HttpService } from '@nestjs/axios';
 import { User, WebhookLog } from 'src/user/user.entity';
 import { firstValueFrom } from 'rxjs';
 import { Order } from 'src/order/order.entity';
-import { OrderStatus } from 'src/order/order.dto';
-import { WebhookPayload, WebhookExtra } from './user.dto';
 
 @Injectable()
 export class WebhookService {
@@ -19,8 +17,11 @@ export class WebhookService {
         @InjectRepository(WebhookLog) private webhookLogRepository: Repository<WebhookLog>
     ) { }
 
-    async notify(orderId: string, userId: string, status: OrderStatus, extra: WebhookExtra) {
+    async notify(orderId: string, userId: string) {
         const order = (await this.orderRepository.createQueryBuilder('order')
+            .leftJoinAndSelect('order.item', 'item')
+            .leftJoinAndSelect('order.imaging', 'imaging')
+            .leftJoinAndSelect('order.statusHistory', 'statusHistory')
             .where('order.id = :id', { id: orderId })
             .getOne())!;
 
@@ -30,17 +31,11 @@ export class WebhookService {
 
         if (!user?.webhookUrl) return;
 
-        const payload: WebhookPayload = {
-            order,
-            status,
-            ...extra
-        };
-
-        await this.send(user, payload);
+        await this.send(user, order);
     }
 
-    private async send(user: User, payload: WebhookPayload, attemp = 1) {
-        const body = JSON.stringify(payload);
+    private async send(user: User, order: Order, attemp = 1) {
+        const body = JSON.stringify(order);
         const headers = {
             'Content-Type': 'application/json',
             'X-Webhook-Timestamp': new Date().toISOString(),
@@ -55,7 +50,7 @@ export class WebhookService {
         let success = false;
 
         try {
-            const response = await firstValueFrom(this.httpService.post(user.webhookUrl, payload, { headers, timeout: 5000 }));
+            const response = await firstValueFrom(this.httpService.post(user.webhookUrl, order, { headers, timeout: 5000 }));
             responseCode = response.status;
             success = true;
         } catch (error) {
@@ -64,13 +59,13 @@ export class WebhookService {
             if (attemp < 3) {
                 const delay = Math.pow(2, attemp) * 1000;
                 await new Promise(resolve => setTimeout(resolve, delay));
-                return this.send(user, payload, attemp + 1);
+                return this.send(user, order, attemp + 1);
             }
         } finally {
             await this.webhookLogRepository.save({
-                orderId: payload.order.id,
-                status: payload.status,
-                payload,
+                orderId: order.id,
+                status: order.status,
+                payload: order,
                 responseCode,
                 success,
                 attemp

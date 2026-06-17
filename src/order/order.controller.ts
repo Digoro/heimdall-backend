@@ -124,7 +124,7 @@ export class OrderController {
   }
 
   @Post('webhook')
-  webhook(@Body() data: userDto.WebhookPayload) {
+  webhook(@Body() data: any) {
     console.log(data);
   }
 }

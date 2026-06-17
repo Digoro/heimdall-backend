@@ -1,6 +1,6 @@
 import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsEnum, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsDateString, IsEnum, IsOptional, IsString, ValidateNested } from "class-validator";
 import { Geometry, TaskProperty } from "src/imaging/imaging.dto";
 import { ProductType } from "src/product/product.dto";
 import { PaginationSearchDto } from "src/shared/interface/pagination.dto";
@@ -65,6 +65,14 @@ export class OrderStatusUpdateDto {
     @IsOptional()
     @IsString()
     reason?: string;
+
+    @IsOptional()
+    @IsDateString()
+    estimatedCollectionDate?: Date;
+
+    @IsOptional()
+    @IsDateString()
+    estimatedDeliveryDate?: Date;
 }
 
 export class ArchiveOrderRequestDto {
