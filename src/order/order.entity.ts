@@ -29,6 +29,13 @@ export class Order extends BasicEntity {
     @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.RECEIVED })
     status: OrderStatus;
 
+    @Column({ type: 'jsonb', nullable: true })
+    filePath: {
+        data: string;
+        metadata: string;
+        thumbnail: string;
+    };
+
     @Expose()
     @ApiProperty({
         example: {

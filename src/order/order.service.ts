@@ -127,8 +127,19 @@ export class OrderService {
         return await this.get(order!.id);
     }
 
+    async update(orderId: string, order: any) {
+        return await this.orderRepository.update(orderId, order);
+    }
+
     async findById(id: string): Promise<Order | null> {
         return await this.orderRepository.findOneBy({ id })
+    }
+
+    async findByIdWithUser(id: string): Promise<Order | null> {
+        return await this.orderRepository.createQueryBuilder('order')
+            .leftJoinAndSelect('order.user', 'user')
+            .where('order.id = :id', { id })
+            .getOne();
     }
 
     async archiveOrder(key: string, dto: ArchiveOrderRequestDto) {

@@ -4,16 +4,47 @@ import { AuthModule } from 'src/auth/auth.module';
 import { ProductController } from './product.controller';
 import { Product } from './product.entity';
 import { ProductService } from './product.service';
+import { MulterModule } from '@nestjs/platform-express';
+import * as fs from 'fs';
+import * as path from 'path';
+import { OrderModule } from 'src/order/order.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Product
     ]),
-    AuthModule
+    AuthModule,
+    OrderModule,
+    MulterModule.registerAsync({
+      useFactory: async () => {
+        await fs.promises.mkdir('/tmp/oms', { recursive: true });
+
+        return {
+          dest: '/tmp/oms',
+          limits: {
+            fileSize: 1024 * 1024 * 1024 * 3 //3GB
+          },
+          fileFilter: (req, file, cb) => {
+            const allowMimeType: Record<string, string[]> = {
+              data: ['.tif', '.tiff'],
+              metadata: ['.json'],
+              thumbnail: ['.png', '.jpg', '.jpeg', '.webp']
+            };
+            const allowed = allowMimeType[file.fieldname];
+            if (!allowed) return cb(null, true);
+            const ext = path.extname(file.originalname).toLowerCase();
+            if (!allowed.includes(ext)) {
+              return cb(new Error(`${file.fieldname} file format error, allowed: ${allowed.join(', ')}`), false);
+            }
+            cb(null, true);
+          }
+        }
+      }
+    })
   ],
   providers: [
-    ProductService
+    ProductService,
   ],
   controllers: [
     ProductController

@@ -123,7 +123,8 @@ export class OrderController {
     return this.orderService.approve(apiKey, id);
   }
 
-  @Post('webhook')
+  @ApiExcludeEndpoint()
+  @Post('webhook-test')
   webhook(@Body() data: any) {
     console.log(data);
   }

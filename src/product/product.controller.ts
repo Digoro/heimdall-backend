@@ -1,6 +1,5 @@
-import { Controller, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { Controller, Param, Post, Req, UseGuards, UseInterceptors } from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/shared/decorator/roles.decorator';
 import { RolesGuard } from 'src/shared/guard/roles-guard';
 import { Role } from 'src/user/user.dto';
@@ -16,16 +15,20 @@ export class ProductController {
 
   @Roles(Role.ADMIN)
   @UseGuards(JwtGuard, RolesGuard)
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './uploads',
-      filename: (req, file, cb) => {
-        cb(null, `${Date.now()}_${file.originalname}`);
-      }
-    })
-  }))
-  @Post('admin/upload')
-  upload(@UploadedFile() file: any) {
-    return { url: `http://localhost:3000/uploads/${file.filename}` };
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'data', maxCount: 1 },
+      { name: 'metadata', maxCount: 1 },
+      { name: 'thumbnail', maxCount: 1 },
+    ])
+  )
+  @Post('admin/upload/:orderId')
+  upload(@Param('orderId') orderId: string, @Req() req: any) {
+    const files = req.files as {
+      data?: Express.Multer.File[];
+      metadata?: Express.Multer.File[];
+      thumbnail?: Express.Multer.File[];
+    }
+    return this.productService.uploadProductFiles(orderId, files);
   }
 }
