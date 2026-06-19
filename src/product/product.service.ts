@@ -70,7 +70,7 @@ export class ProductService {
             }
         }
 
-        const baseUrl = this.configService.getOrThrow('APP_BASE_URL');
+        const baseUrl = this.configService.getOrThrow('API_BASE_URL');
         await this.orderService.update(orderId, {
             downloadUrl: {
                 data: `${baseUrl}/orders/${orderId}/download/data`,
