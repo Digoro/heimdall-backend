@@ -31,13 +31,13 @@ export class User extends BasicEntity {
     @Column({ type: 'enum', enum: Role, default: Role.USER })
     role: Role;
 
-    @Column({ default: 100 })
+    @Column({ default: 5000 })
     dailyLimit: number;
 
     @Column({ default: 0 })
     dailyUsage: number;
 
-    @Column({ default: 500 })
+    @Column({ default: 100000 })
     monthlyLimit: number;
 
     @Column({ default: 0 })

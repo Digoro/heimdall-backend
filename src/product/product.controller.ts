@@ -5,6 +5,7 @@ import { RolesGuard } from 'src/shared/guard/roles-guard';
 import { Role } from 'src/user/user.dto';
 import { ProductService } from './product.service';
 import { JwtGuard } from 'src/auth/jwt.guard';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller('api/products')
 export class ProductController {
@@ -13,6 +14,7 @@ export class ProductController {
     private productService: ProductService,
   ) { }
 
+  @ApiExcludeEndpoint()
   @Roles(Role.ADMIN)
   @UseGuards(JwtGuard, RolesGuard)
   @UseInterceptors(

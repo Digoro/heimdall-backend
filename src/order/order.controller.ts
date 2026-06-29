@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Patch, Post, Put, UseGuards, Request, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Patch, Post, Put, UseGuards, Request, UseInterceptors, ParseUUIDPipe } from '@nestjs/common';
 import { ApiBody, ApiExcludeEndpoint, ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { Roles } from 'src/shared/decorator/roles.decorator';
@@ -27,7 +27,7 @@ export class OrderController {
   @UseGuards(JwtGuard, RolesGuard)
   @Get('admin/:id')
   get(@Param('id') id: string): Promise<Order> {
-    return this.orderService.get(id);
+    return this.orderService.get(id, { includeUser: true });
   }
 
   @ApiExcludeEndpoint()
@@ -69,7 +69,7 @@ export class OrderController {
   @UseGuards(APIKeyGuard)
   @UseInterceptors(APIUsageInterceptor)
   @Get(':id')
-  getCollection(@Param('id') id: string): Promise<Order> {
+  getCollection(@Param('id', ParseUUIDPipe) id: string): Promise<Order> {
     return this.orderService.get(id);
   }
 
@@ -107,7 +107,7 @@ export class OrderController {
   @Patch(':id/cancel')
   @UseGuards(APIKeyGuard)
   @UseInterceptors(APIUsageInterceptor)
-  cancel(@Headers('api-key') apiKey: string, @Param('id') id: string) {
+  cancel(@Headers('api-key') apiKey: string, @Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.cancel(apiKey, id);
   }
 
@@ -119,7 +119,7 @@ export class OrderController {
   @Patch(':id/approve')
   @UseGuards(APIKeyGuard)
   @UseInterceptors(APIUsageInterceptor)
-  approve(@Headers('api-key') apiKey: string, @Param('id') id: string) {
+  approve(@Headers('api-key') apiKey: string, @Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.approve(apiKey, id);
   }
 

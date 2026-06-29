@@ -19,7 +19,9 @@ export class WebhookService {
 
     async notify(orderId: string, userId: string) {
         const order = (await this.orderRepository.createQueryBuilder('order')
-            .leftJoinAndSelect('order.item', 'item')
+            .leftJoinAndSelect('order.referencedItem', 'referencedItem')
+            .leftJoinAndSelect('order.deliveredItem', 'deliveredItem')
+            .leftJoinAndSelect('deliveredItem.product', 'product')
             .leftJoinAndSelect('order.imaging', 'imaging')
             .leftJoinAndSelect('order.statusHistory', 'statusHistory')
             .where('order.id = :id', { id: orderId })
@@ -31,7 +33,10 @@ export class WebhookService {
 
         if (!user?.webhookUrl) return;
 
-        await this.send(user, order);
+        // TODO: 웹훅으로 전달할 정보 정제 필요
+        const newOrder = JSON.parse(JSON.stringify(order));
+        delete newOrder.deliveredItem.product.filePath;
+        await this.send(user, newOrder);
     }
 
     private async send(user: User, order: Order, attemp = 1) {

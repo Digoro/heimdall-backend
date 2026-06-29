@@ -5,8 +5,10 @@ export enum ImagingMode {
     SCANSAR = "ScanSAR",
     SPOTLIGHT_SINGLE = "Spotlight_Single",
     SPOTLIGHT_DWELL = "Spotlight_Dwell",
+    SPOTLIGHT_DWELL_FIXEDPRF = "Spotlight_Dwell_FIXEDPRF",
     SPOTLIGHT_SINGLE_UHR = "Spotlight_Single_UHR",
-    SPOTLIGHT_DWELL_UHR = "Spotlight_Dwell_UHR"
+    SPOTLIGHT_DWELL_UHR = "Spotlight_Dwell_UHR",
+    SPOTLIGHT_DWELL_UHR_FIXEDPRF = "Spotlight_Dwell_UHR_FixedPRF"
 }
 
 export class SortByDto {

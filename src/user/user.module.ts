@@ -7,6 +7,7 @@ import { UserService } from './user.service';
 import { WebhookService } from './webhook.service';
 import { HttpModule } from '@nestjs/axios';
 import { Order } from 'src/order/order.entity';
+import { MailService } from './mail.service';
 
 @Module({
   imports: [
@@ -20,14 +21,16 @@ import { Order } from 'src/order/order.entity';
   ],
   providers: [
     UserService,
-    WebhookService
+    WebhookService,
+    MailService
   ],
   controllers: [
     UserController
   ],
   exports: [
     UserService,
-    WebhookService
+    WebhookService,
+    MailService
   ]
 })
 export class UserModule { }

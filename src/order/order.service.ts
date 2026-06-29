@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { APIService } from 'src/apiKey/api.service';
@@ -10,6 +10,7 @@ import { Imaging } from 'src/imaging/imaging.entity';
 import { UserService } from 'src/user/user.service';
 import { CatalogService } from 'src/catalog/catalog.service';
 import { WebhookService } from 'src/user/webhook.service';
+import { MailService } from 'src/user/mail.service';
 
 @Injectable()
 export class OrderService {
@@ -21,18 +22,23 @@ export class OrderService {
         private collectionService: CatalogService,
         private imagingService: ImagingService,
         private userService: UserService,
+        private mailService: MailService,
         private webhookService: WebhookService
     ) { }
 
-    async get(id: string): Promise<Order> {
-        const order = await this.orderRepository.createQueryBuilder('order')
-            .leftJoinAndSelect('order.user', 'user')
-            .leftJoinAndSelect('order.item', 'item')
+    async get(id: string, options?: { includeUser?: boolean }): Promise<Order> {
+        const qb = this.orderRepository.createQueryBuilder('order')
+            .leftJoinAndSelect('order.referencedItem', 'referencedItem')
+            .leftJoinAndSelect('order.deliveredItem', 'deliveredItem')
             .leftJoinAndSelect('order.imaging', 'imaging')
             .leftJoinAndSelect('order.statusHistory', 'statusHistory')
             .where('order.id = :id', { id })
-            .getOne();
 
+        if (options?.includeUser) {
+            qb.leftJoinAndSelect('order.user', 'user')
+        }
+
+        const order = await qb.getOne();
         if (!order) {
             throw new NotFoundException();
         }
@@ -43,7 +49,7 @@ export class OrderService {
         const options = { page: dto.page, limit: dto.limit };
         const query = this.orderRepository.createQueryBuilder('order')
             .leftJoinAndSelect('order.user', 'user')
-            .leftJoinAndSelect('order.item', 'item')
+            .leftJoinAndSelect('order.referencedItem', 'referencedItem')
             .leftJoinAndSelect('order.imaging', 'imaging')
             .orderBy('order.createdAt', 'DESC')
         if (dto?.email) {
@@ -76,7 +82,7 @@ export class OrderService {
         const options = { page: dto.page, limit: dto.limit };
         const query = this.orderRepository.createQueryBuilder('order')
             .leftJoin('order.user', 'user')
-            .leftJoinAndSelect('order.item', 'item')
+            .leftJoinAndSelect('order.referencedItem', 'referencedItem')
             .leftJoinAndSelect('order.imaging', 'imaging')
             .where('user.id = :userId', { userId: apiKey.user.id })
             .orderBy('order.createdAt', 'DESC')
@@ -142,18 +148,26 @@ export class OrderService {
             .getOne();
     }
 
+    async findByIdWithDelieverdItem(id: string): Promise<Order | null> {
+        return await this.orderRepository.createQueryBuilder('order')
+            .leftJoinAndSelect('order.deliveredItem', 'deliveredItem')
+            .where('order.id = :id', { id })
+            .getOne();
+    }
+
     async archiveOrder(key: string, dto: ArchiveOrderRequestDto) {
         const apiKey = (await this.apiService.findByKey(key))!;
         const item = await this.collectionService.getItem(dto.collectionId, dto.itemId, false);
-        if (!item) throw new NotFoundException();
 
         const order = await this.orderRepository.save(this.orderRepository.create({
             type: OrderType.ARCHIVE,
             user: { id: apiKey.user.id },
-            item: { id: item.id },
+            referencedItem: { id: item.id },
             productType: dto.productType
         } as Order));
 
+        // TODO: 관리자 이메일 전송
+        // await this.mailService.sendOrderNotification(order);
         return await this.get(order.id);
     }
 
@@ -183,6 +197,8 @@ export class OrderService {
             productType: dto.properties.productType
         } as Order));
 
+        // TODO: 관리자 이메일 전송
+        // await this.mailService.sendOrderNotification(newOrder);
         return await this.get(newOrder.id);
     }
 
@@ -190,33 +206,41 @@ export class OrderService {
         const apiKey = (await this.apiService.findByKey(key))!;
         const user = (await this.userService.findById(apiKey.user.id))!;
         const order = await this.orderRepository.createQueryBuilder('order')
-            .leftJoin('order.user', 'user')
+            .leftJoinAndSelect('order.user', 'user')
             .where('order.id = :orderId', { orderId: id })
             .andWhere('user.id = :userId', { userId: user.id })
             .getOne();
 
-        if (order) {
-            await this.updateStatus(id, order.user.id, { status: OrderStatus.CANCELED });
-            return { message: 'Order canceled successful.' }
-        } else {
-            throw new NotFoundException();
+        if (!order) {
+            throw new NotFoundException('Order not found');
         }
+
+        if (order.status != OrderStatus.PENDING) {
+            throw new BadRequestException('Order can only be canceled when in pending status')
+        }
+
+        await this.updateStatus(id, order.user.id, { status: OrderStatus.CANCELED });
+        return { message: 'Order canceled successful.' }
     }
 
     async approve(key: string, id: string) {
         const apiKey = (await this.apiService.findByKey(key))!;
         const user = (await this.userService.findById(apiKey.user.id))!;
         const order = await this.orderRepository.createQueryBuilder('order')
-            .leftJoin('order.user', 'user')
+            .leftJoinAndSelect('order.user', 'user')
             .where('order.id = :orderId', { orderId: id })
             .andWhere('user.id = :userId', { userId: user.id })
             .getOne();
 
-        if (order) {
-            await this.updateStatus(id, order.user.id, { status: OrderStatus.APPROVED });
-            return { message: 'Order canceled successful.' }
-        } else {
-            throw new NotFoundException();
+        if (!order) {
+            throw new NotFoundException('Order not found');
         }
+
+        if (order.status != OrderStatus.PENDING) {
+            throw new BadRequestException('Order can only be approved when in pending status')
+        }
+
+        await this.updateStatus(id, order.user.id, { status: OrderStatus.APPROVED });
+        return { message: 'Order approved successful.' }
     }
 }

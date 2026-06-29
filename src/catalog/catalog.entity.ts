@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { BasicEntity } from "src/shared/model/basic.entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeUpdate, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Expose } from "class-transformer";
 import { Product } from "src/product/product.entity";
 import { Order } from "src/order/order.entity";
@@ -24,7 +24,7 @@ export class Extent {
 }
 
 export class Summaries {
-    @ApiProperty({ example: ['stripmap', 'scansar', 'spotlight_single', 'spotlight_dwell', 'spotlight_single_uhr', 'spotlight_dwell_uhr'] })
+    @ApiProperty({ example: ['stripmap', 'scansar', 'spotlight_single', 'spotlight_dwell', 'spotlight_dwell_fixedprf', 'spotlight_single_uhr', 'spotlight_dwell_uhr', 'spotlight_dwell_uhr_fixedprf'] })
     platform: string[];
 
     @ApiProperty({ example: ['SLC', 'GEC', 'GEO'] })
@@ -32,7 +32,7 @@ export class Summaries {
 }
 
 @Entity({ name: 'TB_CATALOG_COLLECTION' })
-export class CatalogCollection extends BasicEntity {
+export class CatalogCollection {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
@@ -87,6 +87,17 @@ export class CatalogCollection extends BasicEntity {
 
     @OneToMany(() => CatalogItem, item => item.collectionEntity)
     items: CatalogItem[];
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
+
+    @BeforeUpdate()
+    updateTimestamp() {
+        this.updatedAt = new Date;
+    }
 }
 
 @Entity({ name: 'TB_CATALOG_ITEM' })
@@ -202,9 +213,9 @@ export class CatalogItem extends BasicEntity {
     @ApiProperty({ description: 'Asset files associated with the item' })
     @Column({ type: 'jsonb' })
     assets: {
-        thumbnail?: { href: string, type: string, title: string, roles: string[] };
-        data?: { href: string, type: string, title: string, roles: string[] };
-        metadata?: { href: string, type: string, title: string, roles: string[] };
+        thumbnail?: { type: string, roles: string[] };
+        data?: { type: string, roles: string[] };
+        metadata?: { type: string, roles: string[] };
     }
 
     @ApiProperty({ description: 'Realted links' })
@@ -216,9 +227,8 @@ export class CatalogItem extends BasicEntity {
     collectionEntity: CatalogCollection;
 
     @OneToOne(() => Product, product => product.item)
-    @JoinColumn()
     product: Product;
 
-    @OneToMany(() => Order, order => order.item)
+    @OneToMany(() => Order, order => order.referencedItem)
     orders: Order[];
 }

@@ -24,10 +24,18 @@ export class CatalogService {
         return {
             collections: collections.map(c => this.serialize(c)),
             link: [
-                { rel: 'self', href: `${this.baseUrl}/catalog/collections` },
-                { rel: 'root', href: `${this.baseUrl}/catalog` }
+                { rel: 'self', href: `${this.baseUrl}/api/catalog/collections` },
+                { rel: 'root', href: `${this.baseUrl}/api/catalog` }
             ]
         }
+    }
+
+    async getCollectionById(collectionId: string) {
+        return await this.collectionRepository.findOne({
+            where: {
+                collectionId
+            }
+        });
     }
 
     async getCollection(collectionId: string) {
@@ -44,9 +52,9 @@ export class CatalogService {
 
     private serialize(collection: CatalogCollection) {
         collection.links = [
-            { rel: 'self', href: `${this.baseUrl}/catalog/collections/${collection.collectionId}` },
-            { rel: 'items', href: `${this.baseUrl}/catalog/collections/${collection.collectionId}/items` },
-            { rel: 'root', href: `${this.baseUrl}/catalog` },
+            { rel: 'self', href: `${this.baseUrl}/api/catalog/collections/${collection.collectionId}` },
+            { rel: 'items', href: `${this.baseUrl}/api/catalog/collections/${collection.collectionId}/items` },
+            { rel: 'root', href: `${this.baseUrl}/api/catalog` },
         ]
 
         const result = plainToInstance(CatalogCollection, collection, {
@@ -79,9 +87,9 @@ export class CatalogService {
                 page,
             },
             links: [
-                { rel: 'self', href: `${this.baseUrl}/catalog/collections/${collectionId}/items?page=${page}&limit=${limit}` },
-                { rel: 'items', href: `${this.baseUrl}/catalog/collections/${collectionId}` },
-                { rel: 'root', href: `${this.baseUrl}/catalog` },
+                { rel: 'self', href: `${this.baseUrl}/api/catalog/collections/${collectionId}/items?page=${page}&limit=${limit}` },
+                { rel: 'items', href: `${this.baseUrl}/api/catalog/collections/${collectionId}` },
+                { rel: 'root', href: `${this.baseUrl}/api/catalog` },
                 ... (page * limit < total ? [{ rel: 'next', href: `${this.baseUrl}/catalog/collections/${collectionId}/items?page=${page + 1}&limit=${limit}` }] : []),
                 ... (page > 1 ? [{ rel: 'prev', href: `${this.baseUrl}/catalog/collections/${collectionId}/items?page=${page - 1}&limit=${limit}` }] : []),
             ]
@@ -113,9 +121,9 @@ export class CatalogService {
             "https://stac-extensions.github.io/view/v1.0.0/schema.json"
         ];
         item.links = [
-            { rel: 'self', href: `${this.baseUrl}/catalog/collections/${item.collection}/items` },
-            { rel: 'items', href: `${this.baseUrl}/catalog/collections/${item.collection}` },
-            { rel: 'root', href: `${this.baseUrl}/catalog` },
+            { rel: 'self', href: `${this.baseUrl}/api/catalog/collections/${item.collection}/items` },
+            { rel: 'items', href: `${this.baseUrl}/api/catalog/collections/${item.collection}` },
+            { rel: 'root', href: `${this.baseUrl}/api/catalog` },
         ];
 
         return plainToInstance(CatalogItem, item, {
@@ -139,7 +147,7 @@ export class CatalogService {
 
         if (bbox?.length === 4) {
             const [minLon, minLat, maxLon, maxLat] = bbox;
-            qb.andWhere('ST_Intersects(item.geometry, ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326)', { minLon, minLat, maxLon, maxLat });
+            qb.andWhere('ST_Intersects(item.geometry, ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326))', { minLon, minLat, maxLon, maxLat });
         }
 
         if (intersects) {
@@ -162,14 +170,38 @@ export class CatalogService {
 
         if (query) {
             const numericField = new Set([
-                'view:incidence_angle',
-                'view:azimuth',
-                'cosmos:resoultion',
+                'cosmos:antenna_length',
+                'cosmos:antenna_beamwidth',
+                'cosmos:number_of_state_vectors',
+                'cosmos:heading',
                 'sar:center_frequency',
+                'cosmos:echo_sampling_window_length',
+                'cosmos:prf',
+                'cosmos:range_chirp_length',
+                'cosmos:range_chirp_rate',
+                'cosmos:rank',
+                'cosmos:sampling_rate',
+                'cosmos:range_first_time',
+                'cosmos:range_samples',
+                'cosmos:azimuth_lines',
+                'view:incidence_angle',
+                'cosmos:doppler_bandwidth',
+                'cosmos:effective_velocity',
+                'cosmos:range_focusing_bandwidth',
                 'sar:pixel_spacing_range',
                 'sar:pixel_spacing_azimuth',
                 'sar:looks_range',
-                'sar:looks:azimuth'
+                'sar:looks_azimuth',
+                'cosmos:center_latitude',
+                'cosmos:center_longitude',
+                'cosmos:near_range_slc',
+                'cosmos:center_range_slc',
+                'cosmos:far_range_slc',
+                'cosmos:far_incidence_angle',
+                'cosmos:far_look_angle',
+                'cosmos:near_incidence_angle',
+                'cosmos:near_look_angle',
+                'cosmos:center_incidence_angle'
             ]);
             Object.entries(query).forEach(([field, operators], i) => {
                 const isNumeric = numericField.has(field);
@@ -240,11 +272,19 @@ export class CatalogService {
                 page
             },
             links: [
-                { rel: 'self', href: `${this.baseUrl}/catalog/search` },
-                { rel: 'root', href: `${this.baseUrl}/catalog` },
-                ... (page * limit < total ? [{ rel: 'next', href: `${this.baseUrl}/catalog/search?page=${page + 1}&limit=${limit}` }] : []),
-                ... (page > 1 ? [{ rel: 'next', href: `${this.baseUrl}/catalog/search?page=${page - 1}&limit=${limit}` }] : []),
+                { rel: 'self', href: `${this.baseUrl}/api/catalog/search` },
+                { rel: 'root', href: `${this.baseUrl}/api/catalog` },
+                ... (page * limit < total ? [{ rel: 'next', href: `${this.baseUrl}/api/catalog/search?page=${page + 1}&limit=${limit}` }] : []),
+                ... (page > 1 ? [{ rel: 'next', href: `${this.baseUrl}/api/catalog/search?page=${page - 1}&limit=${limit}` }] : []),
             ]
         };
+    }
+
+    async getItemById(itemId): Promise<CatalogItem | null> {
+        return await this.itemRepository.findOne({ where: { itemId } });
+    }
+
+    async addItem(item: CatalogItem) {
+        return await this.itemRepository.save(item);
     }
 }

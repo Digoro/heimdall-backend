@@ -25,6 +25,7 @@ export class APIService {
         const query = this.apiKeyRepository.createQueryBuilder('apiKey')
             .leftJoin('apiKey.user', 'user')
             .where('user.id = :userId', { userId })
+            .andWhere('apiKey.isDeleted = false')
             .orderBy('apiKey.createdAt', 'DESC')
 
         const results = await paginate<APIKey>(query, options);
@@ -117,8 +118,7 @@ export class APIService {
         return await this.usageRepository.save(this.usageRepository.create(newUsage));
     }
 
-    //TODO: API_FEATURE_USAGE 참조되서 삭제 안됨
     async delete(id: string) {
-        this.apiKeyRepository.delete(id);
+        return await this.apiKeyRepository.update(id, { isDeleted: true });
     }
 }

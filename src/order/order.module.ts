@@ -8,7 +8,6 @@ import { OrderService } from './order.service';
 import { CatalogModule } from 'src/catalog/catalog.module';
 import { ImagingModule } from 'src/imaging/imaging.module';
 import { UserModule } from 'src/user/user.module';
-import { DownloadController } from './download.controller';
 
 @Module({
   imports: [
@@ -20,17 +19,16 @@ import { DownloadController } from './download.controller';
     APIModule,
     CatalogModule,
     ImagingModule,
-    UserModule
+    UserModule,
   ],
   providers: [
     OrderService
   ],
   controllers: [
     OrderController,
-    DownloadController
   ],
   exports: [
-    OrderService
+    OrderService,
   ]
 })
 export class OrderModule { }

@@ -29,28 +29,6 @@ export class Order extends BasicEntity {
     @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.RECEIVED })
     status: OrderStatus;
 
-    @Column({ type: 'jsonb', nullable: true })
-    filePath: {
-        data: string;
-        metadata: string;
-        thumbnail: string;
-    };
-
-    @Expose()
-    @ApiProperty({
-        example: {
-            data: 'http://oms.com/orders/bd243b7e-bbab-48f2-9cd4-74b5f9d48fae/download/data',
-            metadata: 'http://oms.com/orders/bd243b7e-bbab-48f2-9cd4-74b5f9d48fae/download/metadata',
-            thumbnail: 'http://oms.com/orders/bd243b7e-bbab-48f2-9cd4-74b5f9d48fae/download/thumbnail',
-        }
-    })
-    @Column({ type: 'jsonb', nullable: true })
-    downloadUrl: {
-        data: string;
-        metadata: string;
-        thumbnail: string;
-    };
-
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
     @Column({ nullable: true })
@@ -68,14 +46,18 @@ export class Order extends BasicEntity {
     @Expose()
     @ApiProperty({ type: () => CatalogItem, required: false })
     @ManyToOne(() => CatalogItem, entity => entity.orders)
-    @JoinColumn({ name: 'itemId' })
-    item?: CatalogItem;
+    referencedItem: CatalogItem;
 
     @Expose()
     @ApiProperty({ type: () => Imaging, required: false })
     @ManyToOne(() => Imaging, entity => entity.orders)
     @JoinColumn({ name: 'imagingId' })
     imaging?: Imaging;
+
+    @Expose()
+    @ApiProperty({ type: () => CatalogItem, required: false })
+    @ManyToOne(() => CatalogItem, entity => entity.orders)
+    deliveredItem: CatalogItem;
 
     @Expose()
     @ApiProperty({ type: () => [OrderStatusHistory] })

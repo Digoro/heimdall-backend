@@ -8,6 +8,9 @@ import { MulterModule } from '@nestjs/platform-express';
 import * as fs from 'fs';
 import * as path from 'path';
 import { OrderModule } from 'src/order/order.module';
+import { CatalogModule } from 'src/catalog/catalog.module';
+import { DownloadController } from './download.controller';
+import { APIModule } from 'src/apiKey/api.module';
 
 @Module({
   imports: [
@@ -15,7 +18,9 @@ import { OrderModule } from 'src/order/order.module';
       Product
     ]),
     AuthModule,
+    APIModule,
     OrderModule,
+    CatalogModule,
     MulterModule.registerAsync({
       useFactory: async () => {
         await fs.promises.mkdir('/tmp/oms', { recursive: true });
@@ -47,7 +52,11 @@ import { OrderModule } from 'src/order/order.module';
     ProductService,
   ],
   controllers: [
-    ProductController
+    ProductController,
+    DownloadController
   ],
+  exports: [
+    ProductService
+  ]
 })
 export class ProductModule { }

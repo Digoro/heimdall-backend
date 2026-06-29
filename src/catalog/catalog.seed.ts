@@ -31,7 +31,7 @@ export class CollectionSeed implements OnApplicationBootstrap {
                     bbox: [[-180, -90, 180, 90]]
                 },
                 temporal: {
-                    interval: [['2026-04-22T00:00:00', null]]
+                    interval: [['2026-06-29T00:00:00', null]]
                 }
             },
             summaries: {
@@ -40,8 +40,9 @@ export class CollectionSeed implements OnApplicationBootstrap {
                     'scansar',
                     'spotlight_single',
                     'spotlight_dwell',
+                    'spotlight_dwell_fixedprf',
                     'spotlight_single_uhr',
-                    'spotlight_dwell_uhr'
+                    'spotlight_dwell_uhr_fixedprf'
                 ],
                 'sar:product_type': ['SLC', 'GEC', 'GEO'],
             }

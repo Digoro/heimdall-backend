@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { OrderModule } from './order/order.module';
+import { ProductModule } from './product/product.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,7 +23,7 @@ async function bootstrap() {
 
   // swagger
   const config = new DocumentBuilder()
-    .setTitle('Order Management System API')
+    .setTitle('Heimdall API')
     .setDescription('COSMOS imagery ordering API')
     .setVersion('1.1.0')
     .addSecurity('api-key', {
@@ -35,7 +36,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config, {
     include: [
       OrderModule,
-      CatalogModule
+      CatalogModule,
+      ProductModule
     ]
   });
   SwaggerModule.setup('/api-docs-light', app, document, {

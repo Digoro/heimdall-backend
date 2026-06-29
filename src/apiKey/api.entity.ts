@@ -25,6 +25,9 @@ export class APIKey extends BasicEntity {
     @Column({ nullable: true })
     lastUsedAt: Date;
 
+    @Column({ default: false })
+    isDeleted: boolean;
+
     @ManyToOne(() => User, entity => entity.apiKeys)
     @JoinColumn({ name: 'userId' })
     user: User;

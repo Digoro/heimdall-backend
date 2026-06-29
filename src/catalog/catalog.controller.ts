@@ -78,7 +78,7 @@ export class CatalogController {
 - 'collections': Collection IDs to search in
 - 'ids': Item IDs (ignores other filters)
 - 'intersects': GeoJON geometry to intersect
-- 'query': Property filters with operators (eq, neq, gt, gte, lt, lte, in)
+- 'query': Property filters with operators (eq, neq, gt, gte, lt, lte, in), example: { "sar:product_type": { "eq": "GEO } }
 - 'sortby': Sort fields and directions
 - 'limit': Item per page (max 100)
 - 'page': Page number
