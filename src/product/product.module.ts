@@ -23,10 +23,10 @@ import { APIModule } from 'src/apiKey/api.module';
     CatalogModule,
     MulterModule.registerAsync({
       useFactory: async () => {
-        await fs.promises.mkdir('/tmp/oms', { recursive: true });
+        await fs.promises.mkdir('/tmp/heimdall', { recursive: true });
 
         return {
-          dest: '/tmp/oms',
+          dest: '/tmp/heimdall',
           limits: {
             fileSize: 1024 * 1024 * 1024 * 3 //3GB
           },

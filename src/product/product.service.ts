@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 import { OrderStatus } from 'src/order/order.dto';
 import { CatalogItem } from 'src/catalog/catalog.entity';
 import { Metadata, MetadataImage } from './product.dto';
+import { pipeline } from 'stream/promises';
 
 @Injectable()
 export class ProductService {
@@ -64,7 +65,10 @@ export class ProductService {
             const absolutePath = path.join(destDir, file.originalname);
 
             try {
-                await fs.promises.rename(file.path, absolutePath);
+                await pipeline(
+                    fs.createReadStream(file.path),
+                    fs.createWriteStream(absolutePath)
+                );
                 savedFilePaths[type] = absolutePath;
                 savedDownloadUrls[type] = `${this.baseUrl}/orders/${orderId}/download/${type}`;
             } catch (error) {
