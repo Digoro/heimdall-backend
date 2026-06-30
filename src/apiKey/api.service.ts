@@ -59,9 +59,9 @@ export class APIService {
     }
 
     async update(id: string, dto: UpdateApiKeyStatusDto): Promise<{ status: string }> {
+        await this.apiKeyRepository.update(id, dto);
         const apiKey = await this.findById(id);
-        const newApiKey = await this.apiKeyRepository.save(Object.assign(apiKey, dto));
-        return { status: newApiKey.status };
+        return { status: apiKey.status };
     }
 
     async findById(id: string): Promise<APIKey> {

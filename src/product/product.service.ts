@@ -10,7 +10,6 @@ import { Repository } from 'typeorm';
 import { OrderStatus } from 'src/order/order.dto';
 import { CatalogItem } from 'src/catalog/catalog.entity';
 import { Metadata, MetadataImage } from './product.dto';
-import { pipeline } from 'stream/promises';
 
 @Injectable()
 export class ProductService {
@@ -65,10 +64,7 @@ export class ProductService {
             const absolutePath = path.join(destDir, file.originalname);
 
             try {
-                await pipeline(
-                    fs.createReadStream(file.path),
-                    fs.createWriteStream(absolutePath)
-                );
+                await this.moveFile(file.path, absolutePath);
                 savedFilePaths[type] = absolutePath;
                 savedDownloadUrls[type] = `${this.baseUrl}/orders/${orderId}/download/${type}`;
             } catch (error) {
@@ -136,6 +132,12 @@ export class ProductService {
             status: OrderStatus.DELIVERED,
             message: 'All files uploaded, order has been delivered'
         }
+    }
+
+    private async moveFile(src: string, dest: string): Promise<void> {
+        await fs.promises.mkdir(path.dirname(dest), { recursive: true });
+        await fs.promises.copyFile(src, dest);
+        await fs.promises.unlink(src);
     }
 
     private buildGeometry(image: MetadataImage) {

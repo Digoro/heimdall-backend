@@ -7,6 +7,8 @@ import { CatalogModule } from './catalog/catalog.module';
 import { OrderModule } from './order/order.module';
 import { ProductModule } from './product/product.module';
 
+process.env.TZ = 'UTC';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());

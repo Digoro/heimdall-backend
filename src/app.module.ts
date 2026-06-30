@@ -30,6 +30,7 @@ import { UserModule } from './user/user.module';
         autoLoadEntities: true,
         synchronize: true,
         charset: 'utf8mb4',
+        timezone: 'UTC'
       })
     }),
     ServeStaticModule.forRoot({
