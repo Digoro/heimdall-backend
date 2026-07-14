@@ -179,7 +179,6 @@ export class ProductService {
             Math.min(...lats),
             Math.max(...lons),
             Math.max(...lats),
-
         ];
     }
 
@@ -189,9 +188,9 @@ export class ProductService {
             title: '',
             mission: General.Mission_ID,
             platform: General.Satellite_ID,
-            datetime: General.Datetime,
-            start_datetime: General.Scene_Sensing_Start_UTC,
-            end_datetime: General.Scene_Sensing_Stop_UTC,
+            datetime: new Date(Number(General.Scene_Sensing_Center_UTC) * 1000).toISOString(),
+            start_datetime: new Date(Number(General.Scene_Sensing_Start_UTC) * 1000).toISOString(),
+            end_datetime: new Date(Number(General.Scene_Sensing_Stop_UTC) * 1000).toISOString(),
             instruments: ['sar'],
 
             // SAR Extension
@@ -213,7 +212,7 @@ export class ProductService {
 
             // COSMOS Extension
             'cosmos:sample_format': General.Sample_Format,
-            'cosmos:scene_sensing_center_utc': General.Scene_Sensing_Center_UTC,
+            'cosmos:datetime': General.Datetime,
             'cosmos:antenna_length': General.Antenna_Length,
             'cosmos:antenna_beamwidth': General.Antenna_Beamwidth,
             'cosmos:reference_utc': General.Referenced_UTC,
