@@ -7,7 +7,7 @@ import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { ProductService } from 'src/product/product.service';
 
 @ApiTags('Download Product')
-@Controller('orders')
+@Controller('api/orders')
 export class DownloadController {
 
   constructor(
@@ -24,7 +24,7 @@ export class DownloadController {
 - 'metadata': metadata(.json)
 - 'thumbnail': thumbnail
 ` })
-  @Get(':orderId/download/:fileType')
+  @Get(':orderId/fileType/:fileType')
   @UseGuards(APIKeyGuard)
   async download(@Param('orderId', ParseUUIDPipe) orderId: string, @Param('fileType') fileType: string, @Res() res) {
     const order = await this.orderService.findByIdWithDelieverdItem(orderId);
@@ -43,6 +43,12 @@ export class DownloadController {
     res.setHeader('Content-Type', this.getMimeType(filename));
     res.setHeader('Content-Disposition', `attachment; filename=${encodeURIComponent(filename)}`);
     res.setHeader('Content-Length', stat.size);
+
+    fs.createReadStream(absolutePath)
+      .pipe(res)
+      .on('error', (err) => {
+        res.status(500).end();
+      });
   }
 
   private getMimeType(filename: string): string {
