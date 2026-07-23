@@ -280,11 +280,18 @@ export class CatalogService {
         };
     }
 
-    async getItemById(itemId): Promise<CatalogItem | null> {
-        return await this.itemRepository.findOne({ where: { itemId } });
+    async getItemById(itemId: string): Promise<CatalogItem | null> {
+        return await this.itemRepository.createQueryBuilder('item')
+            .leftJoinAndSelect('item.product', 'product')
+            .where('item.itemId = :itemId', { itemId })
+            .getOne();
     }
 
     async addItem(item: CatalogItem) {
         return await this.itemRepository.save(item);
+    }
+
+    async updateItem(item: CatalogItem) {
+        return await this.itemRepository.update(item.id, item);
     }
 }

@@ -35,7 +35,9 @@ export class WebhookService {
 
         // TODO: 웹훅으로 전달할 정보 정제 필요
         const newOrder = JSON.parse(JSON.stringify(order));
-        delete newOrder.deliveredItem.product.filePath;
+        if (newOrder?.deliveredItem?.product?.filePath) {
+            delete newOrder.deliveredItem.product.filePath;
+        }
         await this.send(user, newOrder);
     }
 
@@ -52,6 +54,7 @@ export class WebhookService {
         }
 
         let responseCode = 0;
+        let errorObj;
         let success = false;
 
         try {
@@ -60,21 +63,31 @@ export class WebhookService {
             success = true;
         } catch (error) {
             responseCode = error.response?.status;
-
+            errorObj = error;
             if (attemp < 3) {
                 const delay = Math.pow(2, attemp) * 1000;
                 await new Promise(resolve => setTimeout(resolve, delay));
                 return this.send(user, order, attemp + 1);
             }
         } finally {
-            await this.webhookLogRepository.save({
+            const log = {
                 orderId: order.id,
                 status: order.status,
                 payload: order,
                 responseCode,
+                error: {},
                 success,
                 attemp
-            })
+            };
+            if (errorObj) {
+                log.error = {
+                    code: errorObj?.code,
+                    name: errorObj?.name,
+                    message: errorObj?.message,
+                    status: errorObj?.status
+                };
+            }
+            await this.webhookLogRepository.save(log)
         }
     }
 

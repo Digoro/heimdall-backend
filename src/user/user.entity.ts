@@ -85,6 +85,9 @@ export class WebhookLog extends BasicEntity {
     @Column({ nullable: true })
     responseCode: number;
 
+    @Column({ type: 'jsonb', nullable: true })
+    error: object;
+
     @Column({ default: true })
     success: boolean;
 

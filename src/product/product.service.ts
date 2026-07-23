@@ -66,7 +66,7 @@ export class ProductService {
             try {
                 await this.moveFile(file.path, absolutePath);
                 savedFilePaths[type] = absolutePath;
-                savedDownloadUrls[type] = `${this.baseUrl}/orders/${orderId}/download/${type}`;
+                savedDownloadUrls[type] = `${this.baseUrl}/api/download/orders/${orderId}/files/${type}`;
             } catch (error) {
                 errors.push(error);
                 await fs.promises.unlink(file.path).catch(() => { });
@@ -82,12 +82,6 @@ export class ProductService {
         const metadata = JSON.parse(raw) as Metadata;
         const image = metadata.Image;
 
-        const assets = {
-            data: { type: 'image/tiff', roles: ['data'] },
-            metadata: { type: 'application/json', roles: ['metadata'] },
-            thumbnail: { type: 'image/png', roles: ['thumbnail'] },
-        };
-
         let item = await this.catalogService.getItemById(itemId);
         if (!item) {
             const collection = await this.catalogService.getCollectionById('cosmos');
@@ -99,9 +93,20 @@ export class ProductService {
             newItem.geometry = this.buildGeometry(image);
             newItem.bbox = this.buildBbox(image);
             newItem.properties = this.buildProperties(metadata);
-            newItem.assets = assets;
             newItem.collectionEntity = collection!;
             item = await this.catalogService.addItem(newItem);
+
+            item.assets = {
+                data: { type: 'image/tiff', roles: ['data'] },
+                metadata: { type: 'application/json', roles: ['metadata'] },
+                thumbnail: {
+                    type: 'image/png',
+                    roles: ['thumbnail'],
+                    href: `${this.baseUrl}/api/download/catalog/${item.itemId}/files/thumbnail`
+                },
+
+            };
+            await this.catalogService.updateItem(item);
         }
 
         // Product 등록

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Patch, Post, Put, UseGuards, Request, UseInterceptors, ParseUUIDPipe } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Patch, Post, Put, UseGuards, UseInterceptors, ParseUUIDPipe } from '@nestjs/common';
 import { ApiBody, ApiExcludeEndpoint, ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { Roles } from 'src/shared/decorator/roles.decorator';
@@ -42,9 +42,8 @@ export class OrderController {
   @Roles(userDto.Role.ADMIN)
   @UseGuards(JwtGuard, RolesGuard)
   @Put('admin/:id/status')
-  async updateStatus(@Request() request, @Param('id') id: string, @Body() dto: OrderStatusUpdateDto) {
-    const userId = request.user.id;
-    return await this.orderService.updateStatus(id, userId, dto);
+  async updateStatus(@Param('id') id: string, @Body() dto: OrderStatusUpdateDto) {
+    return await this.orderService.updateStatus(id, dto);
   }
 
   @ApiSecurity('api-key')

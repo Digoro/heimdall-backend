@@ -108,8 +108,11 @@ export class OrderService {
         }
     }
 
-    async updateStatus(orderId: string, userId: string, dto: OrderStatusUpdateDto): Promise<any> {
-        const order = (await this.findById(orderId))!;
+    async updateStatus(orderId: string, dto: OrderStatusUpdateDto): Promise<any> {
+        const order = (await this.orderRepository.createQueryBuilder('order')
+            .leftJoinAndSelect('order.user', 'user')
+            .where('order.id = :id', { id: orderId })
+            .getOne())!;
 
         if (dto.estimatedCollectionDate) {
             await this.orderRepository.update(orderId, { estimatedCollectionDate: dto.estimatedCollectionDate });
@@ -128,17 +131,13 @@ export class OrderService {
             reason: dto.reason
         } as OrderStatusHistory);
 
-        await this.webhookService.notify(orderId, userId);
+        await this.webhookService.notify(orderId, order.user.id);
 
         return await this.get(order!.id);
     }
 
     async update(orderId: string, order: any) {
         return await this.orderRepository.update(orderId, order);
-    }
-
-    async findById(id: string): Promise<Order | null> {
-        return await this.orderRepository.findOneBy({ id })
     }
 
     async findByIdWithUser(id: string): Promise<Order | null> {

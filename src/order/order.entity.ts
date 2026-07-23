@@ -43,6 +43,7 @@ export class Order extends BasicEntity {
     @JoinColumn({ name: 'userId' })
     user: User;
 
+    // 주문 시 사용자가 본 카탈로그 Item
     @Expose()
     @ApiProperty({ type: () => CatalogItem, required: false })
     @ManyToOne(() => CatalogItem, entity => entity.orders)
@@ -54,6 +55,7 @@ export class Order extends BasicEntity {
     @JoinColumn({ name: 'imagingId' })
     imaging?: Imaging;
 
+    // 실제로 납품된 카탈로그 Item, 영상 업로드 등록하면 추가됨
     @Expose()
     @ApiProperty({ type: () => CatalogItem, required: false })
     @ManyToOne(() => CatalogItem, entity => entity.orders)

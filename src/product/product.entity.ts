@@ -24,9 +24,9 @@ export class Product extends BasicEntity {
     @Expose()
     @ApiProperty({
         example: {
-            data: 'https://heimdall.kr/orders/bd243b7e-bbab-48f2-9cd4-74b5f9d48fae/download/data',
-            metadata: 'https://heimdall.kr/orders/bd243b7e-bbab-48f2-9cd4-74b5f9d48fae/download/metadata',
-            thumbnail: 'https://heimdall.kr/orders/bd243b7e-bbab-48f2-9cd4-74b5f9d48fae/download/thumbnail',
+            data: 'https://heimdall.kr/api/download/orders/bd243b7e-bbab-48f2-9cd4-74b5f9d48fae/files/data',
+            metadata: 'https://heimdall.kr/api/download/orders/bd243b7e-bbab-48f2-9cd4-74b5f9d48fae/files/metadata',
+            thumbnail: 'https://heimdall.kr/api/download/orders/bd243b7e-bbab-48f2-9cd4-74b5f9d48fae/files/thumbnail',
         }
     })
     @Column({ type: 'jsonb', nullable: true })

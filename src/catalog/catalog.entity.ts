@@ -211,9 +211,9 @@ export class CatalogItem extends BasicEntity {
 
     @Expose()
     @ApiProperty({ description: 'Asset files associated with the item' })
-    @Column({ type: 'jsonb' })
+    @Column({ type: 'jsonb', nullable: true })
     assets: {
-        thumbnail?: { type: string, roles: string[] };
+        thumbnail?: { type: string, roles: string[], href: string };
         data?: { type: string, roles: string[] };
         metadata?: { type: string, roles: string[] };
     }
