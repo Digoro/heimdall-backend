@@ -130,7 +130,7 @@ export class ProductService {
 
         // Order 업데이트
         await this.orderService.update(orderId, { deliveredItem: item! });
-        await this.orderService.updateStatus(orderId, order.user.id, { status: OrderStatus.DELIVERED });
+        await this.orderService.updateStatus(orderId, { status: OrderStatus.DELIVERED });
 
         return {
             itemId,

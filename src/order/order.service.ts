@@ -218,7 +218,7 @@ export class OrderService {
             throw new BadRequestException('Order can only be canceled when in pending status')
         }
 
-        await this.updateStatus(id, order.user.id, { status: OrderStatus.CANCELED });
+        await this.updateStatus(id, { status: OrderStatus.CANCELED });
         return { message: 'Order canceled successful.' }
     }
 
@@ -239,7 +239,7 @@ export class OrderService {
             throw new BadRequestException('Order can only be approved when in pending status')
         }
 
-        await this.updateStatus(id, order.user.id, { status: OrderStatus.APPROVED });
+        await this.updateStatus(id, { status: OrderStatus.APPROVED });
         return { message: 'Order approved successful.' }
     }
 }
