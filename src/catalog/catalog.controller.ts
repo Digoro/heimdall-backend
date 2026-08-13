@@ -26,6 +26,14 @@ export class CatalogController {
     return this.collectionService.search(dto);
   }
 
+  @ApiExcludeEndpoint()
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtGuard, RolesGuard)
+  @Get('admin/itemId/:itemId')
+  getItemByAdmin(@Param('itemId') itemId: string) {
+    return this.collectionService.getItemById(itemId);
+  }
+
   @ApiSecurity('api-key')
   @ApiOperation({ summary: 'Get all collections', description: 'Returns a list of all available STAC collections' })
   @ApiResponse({ status: 200, description: 'List of STAC collections' })

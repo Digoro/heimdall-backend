@@ -54,11 +54,11 @@ export class Geometry {
 }
 
 export class CollectConstraint {
-    @ApiProperty({ example: ImagingMode.STRIPMAP })
+    @ApiProperty({ example: ImagingMode.SPOTLIGHT_SINGLE })
     @IsEnum(ImagingMode)
     imagingMode: ImagingMode;
 
-    @ApiProperty({ example: Polarization.VV })
+    @ApiProperty({ example: Polarization.HH })
     @IsEnum(Polarization)
     polarization: Polarization;
 

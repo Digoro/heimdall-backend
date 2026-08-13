@@ -1,4 +1,4 @@
-import { Controller, Param, Post, Req, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Param, ParseUUIDPipe, Post, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/shared/decorator/roles.decorator';
 import { RolesGuard } from 'src/shared/guard/roles-guard';
@@ -25,7 +25,7 @@ export class ProductController {
     ])
   )
   @Post('admin/upload/:orderId')
-  upload(@Param('orderId') orderId: string, @Req() req: any) {
+  upload(@Param('orderId', ParseUUIDPipe) orderId: string, @Req() req: any) {
     const files = req.files as {
       data?: Express.Multer.File[];
       metadata?: Express.Multer.File[];

@@ -45,13 +45,13 @@ export class Imaging extends BasicEntity {
 
     // property.constraint
     @Expose()
-    @ApiProperty({ example: ImagingMode.STRIPMAP })
-    @Column({ type: 'enum', enum: ImagingMode, default: ImagingMode.STRIPMAP, comment: '촬영 모드' })
+    @ApiProperty({ example: ImagingMode.SPOTLIGHT_SINGLE })
+    @Column({ type: 'enum', enum: ImagingMode, default: ImagingMode.SPOTLIGHT_SINGLE, comment: '촬영 모드' })
     imagingMode: ImagingMode;
 
     @Expose()
-    @ApiProperty({ example: Polarization.VV })
-    @Column({ type: 'enum', enum: Polarization, default: Polarization.VV, comment: '편파' })
+    @ApiProperty({ example: Polarization.HH })
+    @Column({ type: 'enum', enum: Polarization, default: Polarization.HH, comment: '편파' })
     polarization: Polarization;
 
     @Expose()
