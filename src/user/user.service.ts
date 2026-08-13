@@ -14,6 +14,7 @@ export class UserService {
     async search(dto: UserSearchDto): Promise<Pagination<User>> {
         const options = { page: dto.page, limit: dto.limit };
         const query = this.userRepository.createQueryBuilder('user')
+            .andWhere('user.isDeleted = false')
             .orderBy('user.createdAt', 'DESC')
         if (dto?.term != '') {
             query.andWhere(new Brackets(q => {
@@ -31,11 +32,14 @@ export class UserService {
     }
 
     async delete(id: string) {
-        return this.userRepository.delete(id);
+        return await this.userRepository.update(id, { isDeleted: true, deletedAt: new Date() });
     }
 
     async findById(id: string): Promise<User | null> {
-        return await this.userRepository.findOneBy({ id })
+        return await this.userRepository.createQueryBuilder('user')
+            .where('user.isDeleted = false')
+            .andWhere('user.id = :id', { id })
+            .getOne();
     }
 
     async update(id: string, dto: UserUpdateDto): Promise<any> {

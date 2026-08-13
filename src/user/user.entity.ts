@@ -2,12 +2,13 @@ import { Exclude } from "class-transformer";
 import { APIKey } from "src/apiKey/api.entity";
 import { Order } from "src/order/order.entity";
 import { BasicEntity } from "src/shared/model/basic.entity";
-import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Role } from "./user.dto";
 import { OrderStatus } from "src/order/order.dto";
 const bcrypt = require('bcrypt');
 
 @Entity({ name: 'TB_USER' })
+@Index(['email', 'deletedAt'], { unique: true })
 export class User extends BasicEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -15,7 +16,7 @@ export class User extends BasicEntity {
     @Column({ nullable: true })
     refreshToken: string;
 
-    @Column({ unique: true, length: 255 })
+    @Column({ length: 255 })
     email: string;
 
     @Exclude()
@@ -51,6 +52,12 @@ export class User extends BasicEntity {
 
     @Column({ nullable: true })
     webhookSecret: string;
+
+    @Column({ default: false })
+    isDeleted: boolean;
+
+    @Column({ default: null })
+    deletedAt: Date;
 
     @OneToMany(() => Order, entity => entity.user)
     orders: Order[];

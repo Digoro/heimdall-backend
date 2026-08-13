@@ -6,6 +6,7 @@ import { HttpService } from '@nestjs/axios';
 import { User, WebhookLog } from 'src/user/user.entity';
 import { firstValueFrom } from 'rxjs';
 import { Order } from 'src/order/order.entity';
+import { UserService } from './user.service';
 
 @Injectable()
 export class WebhookService {
@@ -14,7 +15,8 @@ export class WebhookService {
         private httpService: HttpService,
         @InjectRepository(User) private userRepository: Repository<User>,
         @InjectRepository(Order) private orderRepository: Repository<Order>,
-        @InjectRepository(WebhookLog) private webhookLogRepository: Repository<WebhookLog>
+        @InjectRepository(WebhookLog) private webhookLogRepository: Repository<WebhookLog>,
+        private userService: UserService
     ) { }
 
     async notify(orderId: string, userId: string) {
@@ -27,9 +29,7 @@ export class WebhookService {
             .where('order.id = :id', { id: orderId })
             .getOne())!;
 
-        const user = (await this.userRepository.createQueryBuilder('user')
-            .where('user.id = :id', { id: userId })
-            .getOne())!;
+        const user = await this.userService.findById(userId);
 
         if (!user?.webhookUrl) return;
 

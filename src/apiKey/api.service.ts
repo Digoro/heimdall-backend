@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash, randomBytes } from 'crypto';
 import { IncomingMessage } from 'http';
@@ -74,7 +74,12 @@ export class APIService {
         const query = this.apiKeyRepository.createQueryBuilder('apiKey')
             .leftJoinAndSelect('apiKey.user', 'user')
             .where('apiKey.hashKey = :hashKey', { hashKey });
-        return await query.getOne();
+        const apiKey = await query.getOne();
+
+        if (apiKey?.user.isDeleted) {
+            throw new UnauthorizedException('User account has been deleted');
+        }
+        return apiKey;
     }
 
     async useKey(request: IncomingMessage, apiKey: APIKey) {
