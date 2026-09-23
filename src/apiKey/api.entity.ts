@@ -22,7 +22,7 @@ export class APIKey extends BasicEntity {
     @Column({ type: 'enum', enum: APIKeyStauts, default: APIKeyStauts.ACTIVE })
     status: APIKeyStauts;
 
-    @Column({ nullable: true })
+    @Column({ type: 'timestamp with time zone', nullable: true })
     lastUsedAt: Date;
 
     @Column({ default: false })

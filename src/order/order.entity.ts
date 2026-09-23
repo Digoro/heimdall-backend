@@ -31,12 +31,12 @@ export class Order extends BasicEntity {
 
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
+    @Column({ type: 'timestamp with time zone', nullable: true })
     estimatedDeliveryDate: Date;
 
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
-    @Column({ nullable: true })
+    @Column({ type: 'timestamp with time zone', nullable: true })
     estimatedCollectionDate: Date;
 
     @ManyToOne(() => User, entity => entity.orders)
@@ -93,6 +93,6 @@ export class OrderStatusHistory extends BasicEntity {
 
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamp with time zone' })
     changedAt: Date;
 }

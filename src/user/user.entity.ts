@@ -56,7 +56,7 @@ export class User extends BasicEntity {
     @Column({ default: false })
     isDeleted: boolean;
 
-    @Column({ default: null })
+    @Column({ type: 'timestamp with time zone', default: null })
     deletedAt: Date;
 
     @OneToMany(() => Order, entity => entity.user)

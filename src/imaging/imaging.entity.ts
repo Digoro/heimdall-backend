@@ -35,12 +35,12 @@ export class Imaging extends BasicEntity {
 
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
-    @Column({ comment: '가장 빠른 촬영 시간' })
+    @Column({ type: 'timestamp with time zone', comment: '가장 빠른 촬영 시간' })
     windowOpen: Date;
 
     @Expose()
     @ApiProperty({ example: new Date().toISOString() })
-    @Column({ comment: '가장 나중 촬영 시간' })
+    @Column({ type: 'timestamp with time zone', comment: '가장 나중 촬영 시간' })
     windowClose: Date;
 
     // property.constraint
