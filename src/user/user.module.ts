@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { UserController } from './user.controller';
-import { User, WebhookLog } from './user.entity';
+import { Tier, TierPolicy, User, WebhookLog } from './user.entity';
 import { UserService } from './user.service';
 import { WebhookService } from './webhook.service';
 import { HttpModule } from '@nestjs/axios';
@@ -14,7 +14,9 @@ import { MailService } from './mail.service';
     TypeOrmModule.forFeature([
       User,
       Order,
-      WebhookLog
+      WebhookLog,
+      Tier,
+      TierPolicy
     ]),
     AuthModule,
     HttpModule

@@ -10,6 +10,7 @@ import { ImagingModule } from './imaging/imaging.module';
 import { OrderModule } from './order/order.module';
 import { ProductModule } from './product/product.module';
 import { UserModule } from './user/user.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { UserModule } from './user/user.module';
     ProductModule,
     CatalogModule,
     ImagingModule,
+    CartModule
   ],
   controllers: [],
   providers: [],
