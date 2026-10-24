@@ -238,6 +238,11 @@ export class CatalogService {
                             qb.andWhere(`${jsonPath} IN (:...${param})`, { [param]: value });
                             break;
                         }
+                        case 'any': {
+                            // 배열 속성(sar:polarizations 등)에 값 중 하나라도 포함되는지
+                            qb.andWhere(`jsonb_exists_any(item.properties -> '${field}', ARRAY[:...${param}])`, { [param]: value });
+                            break;
+                        }
                         case 'startWith': {
                             qb.andWhere(`${jsonPath} LIKE :${param}`, { [param]: value });
                             break;

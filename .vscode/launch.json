@@ -4,18 +4,31 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Debug NestJS (start:dev)",
+            "runtimeExecutable": "npm.cmd",
+            "runtimeArgs": [
+                "run",
+                "start:dev"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "autoAttachChildProcesses": true,
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js"
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Current File",
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "program": "${file}"
-        },
-        {
-            "type": "node-terminal",
-            "name": "Run Script: start:dev",
-            "request": "launch",
-            "command": "npm run start:dev",
-            "cwd": "${workspaceFolder}"
         }
     ]
 }

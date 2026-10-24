@@ -1,14 +1,10 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CatalogService } from './catalog.service';
 import { SearchDto } from './catalog.dto';
-import { ApiBody, ApiExcludeEndpoint, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { APIKeyGuard } from 'src/shared/guard/api-key-guard';
 import { APIUsageInterceptor } from 'src/shared/interceptor/api-usage.interceptor';
 import { NotFoundErrorResponseDto, UnauthorizedErrorResponseDto } from 'src/shared/interface/error-response.dto';
-import { Roles } from 'src/shared/decorator/roles.decorator';
-import { Role } from 'src/user/user.dto';
-import { JwtGuard } from 'src/auth/jwt.guard';
-import { RolesGuard } from 'src/shared/guard/roles-guard';
 
 @ApiTags('Catalog')
 @Controller('api/catalog')
@@ -17,22 +13,6 @@ export class CatalogController {
   constructor(
     private collectionService: CatalogService
   ) { }
-
-  @ApiExcludeEndpoint()
-  @Roles(Role.ADMIN)
-  @UseGuards(JwtGuard, RolesGuard)
-  @Post('admin/search')
-  searchByAdmin(@Body() dto: SearchDto) {
-    return this.collectionService.search(dto);
-  }
-
-  @ApiExcludeEndpoint()
-  @Roles(Role.ADMIN)
-  @UseGuards(JwtGuard, RolesGuard)
-  @Get('admin/itemId/:itemId')
-  getItemByAdmin(@Param('itemId') itemId: string) {
-    return this.collectionService.getItemById(itemId);
-  }
 
   @ApiSecurity('api-key')
   @ApiOperation({ summary: 'Get all collections', description: 'Returns a list of all available STAC collections' })
