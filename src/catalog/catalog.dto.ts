@@ -1,4 +1,4 @@
-import { IsOptional } from "class-validator";
+import { IsArray, IsNumber, IsOptional, IsString } from "class-validator";
 
 export enum ImagingMode {
     STRIPMAP = "Stripmap",
@@ -19,15 +19,21 @@ export class SortByDto {
 
 export class SearchDto {
     @IsOptional()
+    @IsArray()
+    @IsNumber({}, { each: true })
     bbox?: number[];
 
     @IsOptional()
     datetime?: string;
 
     @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
     collections?: string[];
 
     @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
     ids?: string[];
 
     @IsOptional()

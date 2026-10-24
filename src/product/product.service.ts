@@ -154,8 +154,8 @@ export class ProductService {
         const coordinates = [[
             [nearEarly[1], nearEarly[0]],
             [nearLate[1], nearLate[0]],
-            [farEarly[1], farEarly[0]],
             [farLate[1], farLate[0]],
+            [farEarly[1], farEarly[0]],
             [nearEarly[1], nearEarly[0]],
         ]];
 
